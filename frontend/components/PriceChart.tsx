@@ -10,8 +10,15 @@ interface PriceChartProps {
 export default function PriceChart({ tokenPair }: PriceChartProps) {
   const [timeframe, setTimeframe] = useState<'1H' | '24H' | '7D' | '30D'>('24H');
   const [data, setData] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     // Generate mock price data - replace with real API
     const generateData = () => {
       const points = timeframe === '1H' ? 60 : timeframe === '24H' ? 24 : timeframe === '7D' ? 7 : 30;
@@ -25,7 +32,15 @@ export default function PriceChart({ tokenPair }: PriceChartProps) {
     };
 
     setData(generateData());
-  }, [timeframe]);
+  }, [timeframe, mounted]);
+
+  if (!mounted) {
+    return (
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6 h-[400px] flex items-center justify-center">
+        <div className="text-gray-400">Loading chart...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-xl p-6">

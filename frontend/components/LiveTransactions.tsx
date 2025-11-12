@@ -15,8 +15,15 @@ interface Transaction {
 
 export default function LiveTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     // Simulate live transactions
     const interval = setInterval(() => {
       const newTx: Transaction = {
@@ -33,7 +40,16 @@ export default function LiveTransactions() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
+
+  if (!mounted) {
+    return (
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Live Transactions</h3>
+        <div className="text-center py-8 text-gray-400">Loading...</div>
+      </div>
+    );
+  }
 
   const getTypeColor = (type: string) => {
     switch (type) {

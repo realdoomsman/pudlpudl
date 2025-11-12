@@ -3,6 +3,7 @@ import './globals.css'
 import { WalletProvider } from '@/components/WalletProvider'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://pudlpudl.vercel.app'),
   title: 'PUDL Protocol - Concentrated Liquidity AMM on Solana',
   description: 'Next-generation concentrated liquidity AMM on Solana. Trade tokens, provide liquidity, and earn rewards with PUDL Protocol.',
   keywords: ['Solana', 'DeFi', 'AMM', 'DEX', 'Concentrated Liquidity', 'PUDL', 'Trading', 'Liquidity'],
