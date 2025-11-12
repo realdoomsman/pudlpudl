@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "echo 'Root build skipped - use frontend or backend'",
+    "build": "cd frontend && npm install && npm run build",
     "build:contracts": "anchor build",
     "test": "anchor test",
     "deploy": "anchor deploy",
