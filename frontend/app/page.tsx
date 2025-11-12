@@ -127,14 +127,7 @@ export default function Home() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 pb-8">
-        <StatsGrid
-          stats={[
-            { label: 'Total Value Locked', value: '12,450,000', change: 15.3 },
-            { label: 'Total Volume', value: '45,230,000', change: 8.7 },
-            { label: 'Active Pools', value: '156', prefix: '', change: 12.1 },
-            { label: 'Total Users', value: '8,942', prefix: '', change: 23.4 },
-          ]}
-        />
+        <RealTimeStats />
 
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           <PriceChart tokenPair="SOL/USDC" />
@@ -311,6 +304,48 @@ function FeatureCard({ title, description }: { title: string; description: strin
       <p className="text-sm text-gray-400">{description}</p>
     </div>
   )
+}
+
+function RealTimeStats() {
+  const [stats, setStats] = useState({
+    tvl: 0,
+    volume: 0,
+    pools: 0,
+    users: 0
+  });
+
+  useState(() => {
+    // Fetch real stats
+    const fetchStats = async () => {
+      try {
+        const { getProtocolStats } = await import('@/lib/api');
+        const data = await getProtocolStats();
+        setStats({
+          tvl: data.tvl,
+          volume: data.volume24h,
+          pools: data.pools,
+          users: data.users
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000); // Update every 30s
+    return () => clearInterval(interval);
+  });
+
+  return (
+    <StatsGrid
+      stats={[
+        { label: 'Total Value Locked', value: stats.tvl.toLocaleString(), change: 0 },
+        { label: 'Total Volume', value: stats.volume.toLocaleString(), change: 0 },
+        { label: 'Active Pools', value: stats.pools.toString(), prefix: '', change: 0 },
+        { label: 'Total Users', value: stats.users.toString(), prefix: '', change: 0 },
+      ]}
+    />
+  );
 }
 
 function StepCard({ step, title, description }: { step: string; title: string; description: string }) {

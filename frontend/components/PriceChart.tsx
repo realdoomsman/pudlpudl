@@ -11,6 +11,7 @@ export default function PriceChart({ tokenPair }: PriceChartProps) {
   const [timeframe, setTimeframe] = useState<'1H' | '24H' | '7D' | '30D'>('24H');
   const [data, setData] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -19,20 +20,42 @@ export default function PriceChart({ tokenPair }: PriceChartProps) {
   useEffect(() => {
     if (!mounted) return;
     
-    // Generate mock price data - replace with real API
-    const generateData = () => {
-      const points = timeframe === '1H' ? 60 : timeframe === '24H' ? 24 : timeframe === '7D' ? 7 : 30;
-      const basePrice = 100;
-      
-      return Array.from({ length: points }, (_, i) => ({
-        time: i,
-        price: basePrice + Math.random() * 20 - 10,
-        volume: Math.random() * 1000000,
-      }));
-    };
-
-    setData(generateData());
+    fetchRealData();
   }, [timeframe, mounted]);
+
+  const fetchRealData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch real price data from Birdeye
+      const { getHistoricalPrices, TOKEN_MINTS } = await import('@/lib/api');
+      const tokenAddress = TOKEN_MINTS.SOL; // Default to SOL
+      
+      const historicalData = await getHistoricalPrices(tokenAddress, timeframe);
+      
+      if (historicalData.length > 0) {
+        setData(historicalData.map((item, i) => ({
+          time: i,
+          price: item.price,
+          volume: item.volume
+        })));
+      } else {
+        // Fallback to mock data if API fails
+        const points = timeframe === '1H' ? 60 : timeframe === '24H' ? 24 : timeframe === '7D' ? 7 : 30;
+        const basePrice = 100;
+        
+        setData(Array.from({ length: points }, (_, i) => ({
+          time: i,
+          price: basePrice + Math.random() * 20 - 10,
+          volume: Math.random() * 1000000,
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!mounted) {
     return (
@@ -48,7 +71,11 @@ export default function PriceChart({ tokenPair }: PriceChartProps) {
         <div>
           <h3 className="text-lg font-bold text-white mb-1">{tokenPair}</h3>
           <div className="text-2xl font-bold text-white">
-            ${data[data.length - 1]?.price.toFixed(2) || '0.00'}
+            {loading ? (
+              <span className="text-gray-400">Loading...</span>
+            ) : (
+              `$${data[data.length - 1]?.price.toFixed(2) || '0.00'}`
+            )}
           </div>
         </div>
         <div className="flex gap-2">
