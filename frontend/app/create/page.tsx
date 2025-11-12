@@ -50,47 +50,47 @@ export default function CreatePool() {
 
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-6xl font-black mb-4 pudl-gradient-text glow-text">Create Pool</h1>
-          <p className="text-gray-400 text-lg">Launch your own DLMM liquidity pool</p>
+          <h1 className="text-5xl font-bold mb-4 text-white">Create Liquidity Pool</h1>
+          <p className="text-gray-400 text-lg">Deploy a new DLMM pool for any token pair</p>
         </div>
 
-        <div className="glass rounded-2xl p-8 space-y-6 border border-white/10 glow-box">
-          <div className="bg-pudl-aqua/10 border-2 border-pudl-aqua rounded-xl p-5">
-            <p className="text-sm font-bold text-white">
-              💎 Bond Required: <span className="pudl-gradient-text text-lg">{BOND_REQUIRED} $PUDL</span>
+        <div className="card rounded-2xl p-8 space-y-6">
+          <div className="bg-pudl-green/10 border border-pudl-green rounded-xl p-5">
+            <p className="text-sm font-semibold text-white">
+              Bond Required: <span className="text-pudl-green text-lg font-bold">{BOND_REQUIRED} PUDL</span>
             </p>
-            <p className="text-xs text-gray-400 mt-2 font-semibold">
-              This bond will be returned when you close the pool
+            <p className="text-xs text-gray-400 mt-2">
+              Fully refundable when you close the pool. Prevents spam and ensures commitment.
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-bold mb-3 text-gray-300">Base Token Mint</label>
+            <label className="block text-sm font-semibold mb-3 text-gray-300">Base Token Mint Address</label>
             <input
               type="text"
               value={baseMint}
               onChange={(e) => setBaseMint(e.target.value)}
-              placeholder="Enter token mint address"
-              className="w-full px-4 py-4 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-pudl-aqua text-white font-semibold outline-none"
+              placeholder="Enter Solana token mint address"
+              className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-pudl-green text-white font-mono outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold mb-3 text-gray-300">Quote Token Mint</label>
+            <label className="block text-sm font-semibold mb-3 text-gray-300">Quote Token</label>
             <select
               value={quoteMint}
               onChange={(e) => setQuoteMint(e.target.value)}
-              className="w-full px-4 py-4 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-pudl-aqua text-white font-semibold outline-none cursor-pointer"
+              className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-pudl-green text-white font-semibold outline-none cursor-pointer"
             >
-              <option value="" className="bg-[#0a0e27]">Select quote token</option>
-              <option value="SOL" className="bg-[#0a0e27]">SOL</option>
-              <option value="USDC" className="bg-[#0a0e27]">USDC</option>
+              <option value="" className="bg-pudl-dark">Select quote token</option>
+              <option value="SOL" className="bg-pudl-dark">SOL</option>
+              <option value="USDC" className="bg-pudl-dark">USDC</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-bold mb-3 text-gray-300">
-              Fee: <span className="pudl-gradient-text">{(feeBps / 100).toFixed(2)}%</span>
+            <label className="block text-sm font-semibold mb-3 text-gray-300">
+              Trading Fee: <span className="text-pudl-green">{(feeBps / 100).toFixed(2)}%</span>
             </label>
             <input
               type="range"
@@ -98,47 +98,50 @@ export default function CreatePool() {
               max="100"
               value={feeBps}
               onChange={(e) => setFeeBps(Number(e.target.value))}
-              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-pudl-aqua"
+              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-pudl-green"
             />
-            <div className="flex justify-between text-xs text-gray-500 mt-2 font-semibold">
+            <div className="flex justify-between text-xs text-gray-500 mt-2">
               <span>0.05%</span>
               <span>1.00%</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold mb-3 text-gray-300">Bin Step</label>
+            <label className="block text-sm font-semibold mb-3 text-gray-300">Bin Step</label>
             <select
               value={binStep}
               onChange={(e) => setBinStep(Number(e.target.value))}
-              className="w-full px-4 py-4 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-pudl-aqua text-white font-semibold outline-none cursor-pointer"
+              className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-pudl-green text-white font-semibold outline-none cursor-pointer"
             >
-              <option value="1" className="bg-[#0a0e27]">1 (Tight)</option>
-              <option value="10" className="bg-[#0a0e27]">10 (Normal)</option>
-              <option value="25" className="bg-[#0a0e27]">25 (Wide)</option>
-              <option value="100" className="bg-[#0a0e27]">100 (Very Wide)</option>
+              <option value="1" className="bg-pudl-dark">1 basis point (Tight ranges)</option>
+              <option value="10" className="bg-pudl-dark">10 basis points (Normal ranges)</option>
+              <option value="25" className="bg-pudl-dark">25 basis points (Wide ranges)</option>
+              <option value="100" className="bg-pudl-dark">100 basis points (Very wide ranges)</option>
             </select>
-            <p className="text-xs text-gray-400 mt-2 font-semibold">
-              Smaller bin step = tighter price ranges
+            <p className="text-xs text-gray-400 mt-2">
+              Smaller values create tighter price ranges for more precise liquidity.
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-bold mb-3 text-gray-300">Initial Price</label>
+            <label className="block text-sm font-semibold mb-3 text-gray-300">Initial Price</label>
             <input
               type="number"
               value={initialPrice}
               onChange={(e) => setInitialPrice(e.target.value)}
               placeholder="0.00"
               step="0.000001"
-              className="w-full px-4 py-4 bg-white/5 border border-white/20 rounded-xl focus:ring-2 focus:ring-pudl-aqua text-white font-bold text-lg outline-none"
+              className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-pudl-green text-white font-semibold text-lg outline-none"
             />
+            <p className="text-xs text-gray-400 mt-2">
+              Set the starting price for the pool in terms of quote token per base token.
+            </p>
           </div>
 
           <button
             onClick={handleCreate}
             disabled={loading || !connected}
-            className="w-full pudl-gradient py-5 rounded-xl font-black text-xl hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 glow-box shadow-2xl"
+            className="w-full bg-pudl-green text-black py-5 rounded-xl font-bold text-lg hover:bg-pudl-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Pool...' : connected ? 'Create Pool' : 'Connect Wallet'}
           </button>

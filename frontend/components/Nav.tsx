@@ -10,16 +10,18 @@ export function Nav() {
   const isActive = (path: string) => pathname === path
 
   return (
-    <nav className="flex justify-between items-center p-6 glass mx-4 mt-4 rounded-2xl border border-white/10 sticky top-4 z-50 backdrop-blur-xl">
-      <Link href="/" className="text-3xl font-black pudl-gradient-text glow-text tracking-tight hover:scale-105 transition-transform">
-        PUDL
-      </Link>
-      <div className="flex gap-6 items-center">
-        <NavLink href="/pools" active={isActive('/pools')}>Pools</NavLink>
-        <NavLink href="/swap" active={isActive('/swap')}>Swap</NavLink>
-        <NavLink href="/stake" active={isActive('/stake')}>Stake</NavLink>
-        <NavLink href="/create" active={isActive('/create')}>Create</NavLink>
-        <WalletMultiButton className="!bg-gradient-to-r !from-pudl-aqua !to-pudl-purple !rounded-xl !font-bold !px-6 hover:scale-105 transition-transform" />
+    <nav className="border-b border-white/5 backdrop-blur-xl bg-pudl-dark/80 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <Link href="/" className="text-2xl font-bold tracking-tight text-white">
+          PUDL
+        </Link>
+        <div className="flex items-center gap-8">
+          <NavLink href="/pools" active={isActive('/pools')}>Pools</NavLink>
+          <NavLink href="/swap" active={isActive('/swap')}>Swap</NavLink>
+          <NavLink href="/stake" active={isActive('/stake')}>Stake</NavLink>
+          <NavLink href="/create" active={isActive('/create')}>Create</NavLink>
+          <WalletMultiButton />
+        </div>
       </div>
     </nav>
   )
@@ -29,10 +31,10 @@ function NavLink({ href, children, active }: { href: string; children: React.Rea
   return (
     <Link 
       href={href} 
-      className={`font-semibold transition-all text-sm ${
+      className={`text-sm transition-colors ${
         active 
-          ? 'text-pudl-aqua scale-110' 
-          : 'text-gray-300 hover:text-pudl-aqua'
+          ? 'text-white' 
+          : 'text-gray-400 hover:text-white'
       }`}
     >
       {children}
