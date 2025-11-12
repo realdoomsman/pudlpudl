@@ -36,28 +36,51 @@ export default function Home() {
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-16">
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-12 md:mb-16">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 text-white">
-              PUDL Protocol
-            </h1>
-            <p className="text-base md:text-lg text-gray-400 mb-6 md:mb-8">
-              Concentrated liquidity AMM on Solana
-            </p>
-            <div className="flex gap-3 mb-6 md:mb-8">
-              <Link href="/pools" className="bg-white/5 border border-white/10 px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-sm md:text-base font-medium text-white hover:bg-white/10 transition-colors">
-                Pools
-              </Link>
-              <Link href="/stake" className="bg-white/5 border border-white/10 px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-sm md:text-base font-medium text-white hover:bg-white/10 transition-colors">
-                Stake
-              </Link>
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-3xl" />
+        
+        <div className="relative max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-16">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-12 md:mb-16">
+            <div>
+              <div className="inline-block mb-4 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-xs text-blue-400 font-medium">
+                Solana DeFi
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                PUDL Protocol
+              </h1>
+              <p className="text-lg md:text-xl text-gray-400 mb-8">
+                Next-generation concentrated liquidity AMM on Solana
+              </p>
+              <div className="flex gap-3 mb-8">
+                <Link href="/pools" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-lg text-sm font-medium text-white transition-all shadow-lg shadow-blue-500/20">
+                  Explore Pools
+                </Link>
+                <Link href="/swap" className="bg-white/5 border border-white/10 px-6 py-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors">
+                  Start Trading
+                </Link>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-white mb-1">$0</div>
+                  <div className="text-xs text-gray-400">TVL</div>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-white mb-1">0</div>
+                  <div className="text-xs text-gray-400">Pools</div>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-white mb-1">$0</div>
+                  <div className="text-xs text-gray-400">Volume</div>
+                </div>
+              </div>
             </div>
+
+            <ImprovedSwapWidget />
           </div>
-
-          <ImprovedSwapWidget />
         </div>
+      </div>
 
+      <div className="max-w-6xl mx-auto px-4 md:px-6 pb-8">
         <ContractAddress />
 
         <div className="grid md:grid-cols-2 gap-4 mb-12">
@@ -134,31 +157,35 @@ function ContractAddress() {
   }
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden mb-8">
-      <div className="px-4 py-3 border-b border-white/10">
-        <div className="text-sm font-medium text-white">PUDL Token</div>
+    <div className="relative bg-gradient-to-br from-blue-500/5 to-purple-500/5 border border-blue-500/20 rounded-lg overflow-hidden mb-8">
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-50" />
+      <div className="relative px-4 py-3 border-b border-white/10 backdrop-blur-sm">
+        <div className="text-sm font-semibold text-white flex items-center gap-2">
+          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+          PUDL Token
+        </div>
       </div>
-      <div className="p-4">
+      <div className="relative p-4">
         <div className="mb-4">
-          <div className="text-xs text-gray-500 mb-2">Contract Address</div>
-          <div className="bg-black/40 rounded px-3 py-2 border border-white/5">
-            <code className="text-xs text-gray-300 break-all font-mono">{PUDL_TOKEN_CA}</code>
+          <div className="text-xs text-gray-400 mb-2">Contract Address</div>
+          <div className="bg-black/60 rounded px-3 py-2.5 border border-white/10">
+            <code className="text-xs text-blue-400 break-all font-mono">{PUDL_TOKEN_CA}</code>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             onClick={copyCA}
-            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium transition-colors"
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded text-sm font-medium transition-all shadow-lg shadow-blue-500/20"
           >
-            {copied ? '✓ Copied' : 'Copy'}
+            {copied ? '✓ Copied' : 'Copy Address'}
           </button>
           <a
             href={`https://solscan.io/token/${PUDL_TOKEN_CA}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-sm font-medium transition-colors text-center"
+            className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-sm font-medium transition-colors text-center"
           >
-            Solscan
+            View on Solscan
           </a>
         </div>
       </div>
@@ -168,12 +195,15 @@ function ContractAddress() {
 
 function TechCard({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-5">
-      <h3 className="text-sm font-semibold text-white mb-3">{title}</h3>
+    <div className="group bg-white/5 border border-white/10 rounded-lg p-5 hover:bg-white/10 hover:border-blue-500/30 transition-all duration-300">
+      <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+        <span className="w-2 h-2 bg-blue-500 rounded-full group-hover:animate-pulse" />
+        {title}
+      </h3>
       <ul className="space-y-2">
         {items.map((item, i) => (
-          <li key={i} className="text-xs text-gray-400 flex items-start">
-            <span className="text-[#14F195] mr-2">•</span>
+          <li key={i} className="text-xs text-gray-400 flex items-start group-hover:text-gray-300 transition-colors">
+            <span className="text-blue-500 mr-2">→</span>
             {item}
           </li>
         ))}
