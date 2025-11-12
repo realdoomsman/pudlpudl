@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import WalletButton from '@/components/WalletButton'
 import ImprovedSwapWidget from '@/components/ImprovedSwapWidget'
+import { PUDL_TOKEN_CA } from '@/lib/pudlToken'
 
 export default function Home() {
   
@@ -49,6 +51,8 @@ export default function Home() {
 
           <ImprovedSwapWidget />
         </div>
+
+        <ContractAddress />
 
         <div className="grid md:grid-cols-2 gap-4 mb-12">
           <TechCard
@@ -110,6 +114,47 @@ export default function Home() {
           </div>
         </div>
       </footer>
+    </div>
+  )
+}
+
+function ContractAddress() {
+  const [copied, setCopied] = useState(false)
+
+  const copyCA = () => {
+    navigator.clipboard.writeText(PUDL_TOKEN_CA)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4 md:p-5 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">🐕</span>
+            <div className="text-sm font-semibold text-white">PUDL Token</div>
+          </div>
+          <div className="text-xs text-gray-400 mb-1">Contract Address</div>
+          <code className="text-xs md:text-sm text-blue-400 break-all block">{PUDL_TOKEN_CA}</code>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={copyCA}
+            className="flex-1 md:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+          >
+            {copied ? '✓ Copied!' : 'Copy CA'}
+          </button>
+          <a
+            href={`https://solscan.io/token/${PUDL_TOKEN_CA}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 md:flex-none px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition-colors whitespace-nowrap text-center"
+          >
+            View on Solscan
+          </a>
+        </div>
+      </div>
     </div>
   )
 }
