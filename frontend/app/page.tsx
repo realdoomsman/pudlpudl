@@ -1,20 +1,16 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import WalletButton from '@/components/WalletButton'
+import ImprovedSwapWidget from '@/components/ImprovedSwapWidget'
 
 export default function Home() {
-  const { connected } = useWallet()
-  const [hoveredStat, setHoveredStat] = useState<number | null>(null)
-
+  
   return (
-    <div className="min-h-screen bg-pudl-dark">
-      {/* Minimal Nav */}
-      <nav className="border-b border-white/5 backdrop-blur-xl bg-pudl-dark/80 sticky top-0 z-50">
+    <div className="min-h-screen bg-[#0D0D0D]">
+      <nav className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold tracking-tight">
+          <Link href="/" className="text-2xl font-bold text-white">
             PUDL
           </Link>
           <div className="flex items-center gap-8">
@@ -27,96 +23,90 @@ export default function Home() {
             <Link href="/stake" className="text-sm text-gray-400 hover:text-white transition-colors">
               Stake
             </Link>
-            <WalletMultiButton className="!bg-pudl-green !text-black !rounded-lg !font-semibold !text-sm !px-4 !py-2 hover:!bg-pudl-green/90 !transition-all" />
+            <WalletButton />
           </div>
         </div>
       </nav>
 
-      {/* Hero Section - Minimal & Data-Focused */}
-      <div className="max-w-7xl mx-auto px-6 pt-24 pb-16">
-        <div className="max-w-3xl">
-          <h1 className="text-6xl font-bold mb-6 leading-tight">
-            Permissionless<br />
-            Liquidity Markets
-          </h1>
-          <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-            Create and trade on concentrated liquidity pools. Powered by DLMM on Solana.
-          </p>
-          <div className="flex gap-4">
-            <Link
-              href="/swap"
-              className="bg-pudl-green text-black px-6 py-3 rounded-lg font-semibold hover:bg-pudl-green/90 transition-all"
-            >
-              Start Trading
-            </Link>
-            <Link
-              href="/pools"
-              className="card px-6 py-3 rounded-lg font-semibold hover:border-pudl-green/30 transition-all"
-            >
-              Explore Pools
-            </Link>
-          </div>
-        </div>
-
-        {/* Stats Grid - Clean & Professional */}
-        <div className="grid grid-cols-4 gap-4 mt-20">
-          {[
-            { label: 'Total Value Locked', value: '$4.2M', change: '+12.3%' },
-            { label: '24h Volume', value: '$1.5M', change: '+8.7%' },
-            { label: 'Active Pools', value: '127', change: '+5' },
-            { label: 'Total Trades', value: '45.2K', change: '+2.1K' },
-          ].map((stat, i) => (
-            <div
-              key={i}
-              onMouseEnter={() => setHoveredStat(i)}
-              onMouseLeave={() => setHoveredStat(null)}
-              className={`card p-6 rounded-xl transition-all ${
-                hoveredStat === i ? 'border-pudl-green/30' : ''
-              }`}
-            >
-              <div className="text-sm text-gray-500 mb-2">{stat.label}</div>
-              <div className="text-3xl font-bold mb-1">{stat.value}</div>
-              <div className="text-sm text-pudl-green">{stat.change}</div>
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-16">
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-12 md:mb-16">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 text-white">
+              PUDL Protocol
+            </h1>
+            <p className="text-base md:text-lg text-gray-400 mb-6 md:mb-8">
+              Concentrated liquidity AMM on Solana
+            </p>
+            <div className="flex gap-3 mb-6 md:mb-8">
+              <Link href="/pools" className="bg-white/5 border border-white/10 px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-sm md:text-base font-medium text-white hover:bg-white/10 transition-colors">
+                Pools
+              </Link>
+              <Link href="/stake" className="bg-white/5 border border-white/10 px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-sm md:text-base font-medium text-white hover:bg-white/10 transition-colors">
+                Stake
+              </Link>
             </div>
-          ))}
+          </div>
+
+          <ImprovedSwapWidget />
         </div>
 
-        {/* Features - Minimal Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mt-20">
-          <FeatureCard
-            title="Concentrated Liquidity"
-            description="Provide liquidity in specific price ranges for maximum capital efficiency"
-            icon="📊"
+        <div className="grid md:grid-cols-2 gap-4 mb-12">
+          <TechCard
+            title="DLMM Architecture"
+            items={[
+              "Discrete liquidity bins",
+              "Dynamic fee tiers",
+              "Bin-based price discovery",
+              "Composable liquidity positions"
+            ]}
           />
-          <FeatureCard
-            title="Low Fees"
-            description="0.2% base fee with discounts for $PUDL stakers"
-            icon="💰"
-          />
-          <FeatureCard
-            title="Permissionless"
-            description="Anyone can create a pool with just 1,000 $PUDL"
-            icon="🔓"
+          <TechCard
+            title="Protocol Mechanics"
+            items={[
+              "1,000 PUDL bond per pool",
+              "Tiered staking system (0-15 bps)",
+              "Fee sharing for stakers",
+              "Permissionless pool creation"
+            ]}
           />
         </div>
+
+
       </div>
 
-      {/* Footer - Minimal */}
-      <footer className="border-t border-white/5 mt-32">
-        <div className="max-w-7xl mx-auto px-6 py-12 flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            © 2024 PUDL Protocol
+      <footer className="border-t border-white/10 mt-24">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8">
+            <div>
+              <div className="text-base font-bold text-white mb-3">PUDL</div>
+              <p className="text-xs text-gray-500">Concentrated liquidity AMM</p>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white mb-3">Protocol</div>
+              <div className="space-y-2">
+                <a href="/pools" className="block text-xs text-gray-500 hover:text-white transition-colors">Pools</a>
+                <a href="/stake" className="block text-xs text-gray-500 hover:text-white transition-colors">Stake</a>
+                <a href="#" className="block text-xs text-gray-500 hover:text-white transition-colors">Analytics</a>
+              </div>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white mb-3">Developers</div>
+              <div className="space-y-2">
+                <a href="#" className="block text-xs text-gray-500 hover:text-white transition-colors">Docs</a>
+                <a href="#" className="block text-xs text-gray-500 hover:text-white transition-colors">GitHub</a>
+                <a href="#" className="block text-xs text-gray-500 hover:text-white transition-colors">API</a>
+              </div>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white mb-3">Community</div>
+              <div className="space-y-2">
+                <a href="#" className="block text-xs text-gray-500 hover:text-white transition-colors">Twitter</a>
+                <a href="#" className="block text-xs text-gray-500 hover:text-white transition-colors">Discord</a>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm text-gray-500 hover:text-white transition-colors">
-              Docs
-            </a>
-            <a href="#" className="text-sm text-gray-500 hover:text-white transition-colors">
-              Twitter
-            </a>
-            <a href="#" className="text-sm text-gray-500 hover:text-white transition-colors">
-              Discord
-            </a>
+          <div className="pt-6 border-t border-white/10 text-center md:text-left">
+            <div className="text-xs text-gray-500">© 2024 PUDL Protocol</div>
           </div>
         </div>
       </footer>
@@ -124,12 +114,18 @@ export default function Home() {
   )
 }
 
-function FeatureCard({ title, description, icon }: { title: string; description: string; icon: string }) {
+function TechCard({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="card-hover p-6 rounded-xl">
-      <div className="text-3xl mb-4">{icon}</div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-gray-400 leading-relaxed">{description}</p>
+    <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-white mb-3">{title}</h3>
+      <ul className="space-y-2">
+        {items.map((item, i) => (
+          <li key={i} className="text-xs text-gray-400 flex items-start">
+            <span className="text-[#14F195] mr-2">•</span>
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
