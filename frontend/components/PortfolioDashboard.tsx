@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { useState, useEffect } from 'react';
 import { getAllTokenBalances } from '@/lib/solana';
+import { TOKEN_MINTS } from '@/lib/api';
 
 export default function PortfolioDashboard() {
   const { publicKey, connected } = useWallet();
@@ -26,16 +27,16 @@ export default function PortfolioDashboard() {
       const allBalances = await getAllTokenBalances(publicKey.toString());
       setBalances(allBalances);
       
-      // Calculate total value (mock prices for now)
-      const mockPrices: Record<string, number> = {
-        SOL: 100,
-        USDC: 1,
-        PUDL: 0.5,
-        BONK: 0.00001,
-      };
+      // Fetch real prices from Jupiter
+      const { getTokenPrices, TOKEN_MINTS } = await import('@/lib/api');
+      const tokenAddresses = Object.keys(allBalances).map(symbol => TOKEN_MINTS[symbol]).filter(Boolean);
+      const prices = await getTokenPrices(tokenAddresses);
       
+      // Calculate total value with real prices
       const total = Object.entries(allBalances).reduce((sum, [token, amount]) => {
-        return sum + (amount * (mockPrices[token] || 0));
+        const mintAddress = TOKEN_MINTS[token];
+        const price = mintAddress ? prices[mintAddress] || 0 : 0;
+        return sum + (amount * price);
       }, 0);
       
       setTotalValue(total);
