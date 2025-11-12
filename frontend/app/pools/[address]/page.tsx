@@ -49,25 +49,11 @@ export default function PoolDetail({ params }: { params: Promise<{ address: stri
 
         {/* Pool Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pudl-green to-pudl-purple flex items-center justify-center text-2xl font-bold">
-              {pool.baseMint[0]}{pool.quoteMint[0]}
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
-                {pool.baseMint}/{pool.quoteMint}
-              </h1>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-400 font-mono">{pool.address}</span>
-                <button 
-                  onClick={() => navigator.clipboard.writeText(pool.address)}
-                  className="text-xs text-gray-500 hover:text-pudl-green transition-colors px-2 py-1 border border-gray-700 rounded hover:border-pudl-green"
-                  title="Copy address"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {pool.baseMint}/{pool.quoteMint}
+            </h1>
+            <span className="text-sm text-gray-400 font-mono">{pool.address}</span>
           </div>
           <div className="flex gap-3">
             <button className="px-6 py-3 bg-pudl-green text-black rounded-lg font-semibold hover:bg-pudl-green/90 transition-all">
@@ -82,32 +68,28 @@ export default function PoolDetail({ params }: { params: Promise<{ address: stri
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="card p-6 rounded-xl">
-            <div className="text-sm text-gray-400 mb-2">Total Value Locked</div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-sm text-gray-400 mb-2">TVL</div>
+            <div className="text-3xl font-bold text-white">
               ${pool.tvl.toLocaleString()}
             </div>
-            <div className="text-xs text-green-400">+5.2% this week</div>
           </div>
           <div className="card p-6 rounded-xl">
             <div className="text-sm text-gray-400 mb-2">24h Volume</div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-3xl font-bold text-white">
               ${pool.volume24h.toLocaleString()}
             </div>
-            <div className="text-xs text-green-400">+12.8% vs yesterday</div>
           </div>
           <div className="card p-6 rounded-xl">
             <div className="text-sm text-gray-400 mb-2">APR</div>
-            <div className="text-3xl font-bold text-pudl-green mb-1">
+            <div className="text-3xl font-bold text-pudl-green">
               {pool.apr.toFixed(1)}%
             </div>
-            <div className="text-xs text-gray-400">Based on 7d fees</div>
           </div>
           <div className="card p-6 rounded-xl">
-            <div className="text-sm text-gray-400 mb-2">Fee Tier</div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-sm text-gray-400 mb-2">Fee</div>
+            <div className="text-3xl font-bold text-white">
               {(pool.feeBps / 100).toFixed(2)}%
             </div>
-            <div className="text-xs text-gray-400">Trading fee</div>
           </div>
         </div>
 
