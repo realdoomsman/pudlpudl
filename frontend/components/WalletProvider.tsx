@@ -8,8 +8,14 @@ import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adap
 import { clusterApiUrl } from '@solana/web3.js'
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const network = WalletAdapterNetwork.Mainnet
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  // Use environment variable or default to localnet for development
+  const endpoint = useMemo(() => {
+    const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
+    if (rpcUrl) return rpcUrl
+    
+    // Default to localnet for development with deployed programs
+    return 'http://localhost:8899'
+  }, [])
 
   const wallets = useMemo(
     () => [
