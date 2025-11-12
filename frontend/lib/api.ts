@@ -98,30 +98,51 @@ export async function getTokenPrice(tokenMint: string): Promise<number> {
   }
 }
 
-// Get historical price data for charts
+// Get historical price data for charts from CoinGecko
 export async function getHistoricalPrices(
   tokenAddress: string,
   timeframe: '1H' | '24H' | '7D' | '30D'
 ): Promise<Array<{ time: number; price: number; volume: number }>> {
   try {
-    const timeMap = {
-      '1H': '1h',
-      '24H': '24h',
-      '7D': '7d',
-      '30D': '30d'
+    // Find CoinGecko ID for this token
+    const mintToSymbol: Record<string, string> = {};
+    Object.entries(TOKEN_MINTS).forEach(([symbol, mint]) => {
+      mintToSymbol[mint] = symbol;
+    });
+    
+    const symbol = mintToSymbol[tokenAddress];
+    if (!symbol || !COINGECKO_IDS[symbol]) {
+      return [];
+    }
+    
+    const cgId = COINGECKO_IDS[symbol];
+    
+    // Map timeframe to days (CoinGecko auto-selects interval based on days)
+    const daysMap = {
+      '1H': 1,
+      '24H': 1,
+      '7D': 7,
+      '30D': 30
     };
     
+    const days = daysMap[timeframe];
+    
+    // Don't specify interval - CoinGecko will auto-select based on days
     const response = await fetch(
-      `${BIRDEYE_API}/defi/history_price?address=${tokenAddress}&address_type=token&type=${timeMap[timeframe]}`
+      `${COINGECKO_API}/coins/${cgId}/market_chart?vs_currency=usd&days=${days}`
     );
+    
+    if (!response.ok) {
+      return [];
+    }
     
     const data = await response.json();
     
-    if (data.success && data.data?.items) {
-      return data.data.items.map((item: any) => ({
-        time: item.unixTime,
-        price: item.value,
-        volume: item.volume || 0
+    if (data.prices && Array.isArray(data.prices)) {
+      return data.prices.map(([timestamp, price]: [number, number], index: number) => ({
+        time: index,
+        price: price,
+        volume: data.total_volumes?.[index]?.[1] || 0
       }));
     }
     
