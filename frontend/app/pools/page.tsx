@@ -136,7 +136,7 @@ export default function Pools() {
                   >
                     <td className="px-6 py-4">
                       <Link href={`/pools/${pool.address}`} className="hover:text-pudl-aqua transition-colors">
-                        <div className="font-bold text-white">{pool.base_mint.slice(0, 4)}.../{pool.quote_mint.slice(0, 4)}...</div>
+                        <div className="font-bold text-white">{pool.baseMint.slice(0, 4)}.../{pool.quoteMint.slice(0, 4)}...</div>
                         <div className="text-xs text-gray-500 font-mono">{pool.address.slice(0, 8)}...</div>
                       </Link>
                     </td>
