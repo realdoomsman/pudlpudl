@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
+import { PageContainer } from '@/components/PageContainer'
 
 export default function Swap() {
   const { connected } = useWallet()
@@ -64,23 +66,8 @@ export default function Swap() {
   }
 
   return (
-    <main className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 bg-[#0a0e27]">
-        <div className="absolute top-20 left-10 w-[600px] h-[600px] bg-pudl-aqua/10 rounded-full blur-[150px] animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-[600px] h-[600px] bg-pudl-purple/10 rounded-full blur-[150px] animate-pulse"></div>
-      </div>
-
-      <div className="relative z-10">
-        <nav className="flex justify-between items-center p-6 glass mx-4 mt-4 rounded-2xl mb-8 border border-white/10">
-          <a href="/" className="text-3xl font-black pudl-gradient-text glow-text tracking-tight">PUDL</a>
-          <div className="flex gap-6 items-center">
-            <a href="/pools" className="text-gray-300 hover:text-pudl-aqua font-semibold text-sm transition-colors">Pools</a>
-            <a href="/swap" className="text-pudl-aqua font-semibold text-sm">Swap</a>
-            <a href="/stake" className="text-gray-300 hover:text-pudl-aqua font-semibold text-sm transition-colors">Stake</a>
-            <a href="/create" className="text-gray-300 hover:text-pudl-aqua font-semibold text-sm transition-colors">Create</a>
-            <WalletMultiButton className="!bg-gradient-to-r !from-pudl-aqua !to-pudl-purple !rounded-xl !font-bold !px-6" />
-          </div>
-        </nav>
+    <PageContainer>
+      <Nav />
 
         <div className="max-w-lg mx-auto px-4 py-12">
           <div className="text-center mb-8">
@@ -233,6 +220,8 @@ export default function Swap() {
           </div>
         </div>
       </div>
-    </main>
+
+      <Footer />
+    </PageContainer>
   )
 }
