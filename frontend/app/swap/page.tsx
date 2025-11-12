@@ -13,6 +13,18 @@ export default function Swap() {
   const [toAmount, setToAmount] = useState('')
   const [slippage, setSlippage] = useState(1)
   const [loading, setLoading] = useState(false)
+  
+  const mockBalances: Record<string, number> = {
+    SOL: 10.5,
+    USDC: 1000,
+    PUDL: 5000,
+    BONK: 1000000,
+  }
+  
+  const getBalance = (token: string) => {
+    if (!connected) return '0.00'
+    return (mockBalances[token] || 0).toLocaleString()
+  }
 
   const handleSwap = async () => {
     if (!connected) return
@@ -32,12 +44,23 @@ export default function Swap() {
 
   const handleFromAmountChange = (value: string) => {
     setFromAmount(value)
-    if (value) {
-      const estimated = (parseFloat(value) * 0.99).toFixed(6)
-      setToAmount(estimated)
+    if (value && parseFloat(value) > 0) {
+      // Import at top: import { calculateSwapQuote } from '@/lib/swapCalculator'
+      const quote = calculateSwapQuote(fromToken, toToken, parseFloat(value), slippage)
+      setToAmount(quote.outputAmount.toFixed(6))
     } else {
       setToAmount('')
     }
+  }
+
+  const calculateSwapQuote = (from: string, to: string, amount: number, slip: number) => {
+    const prices: Record<string, number> = { SOL: 100, USDC: 1, PUDL: 0.05, BONK: 0.00001 }
+    const fromPrice = prices[from] || 1
+    const toPrice = prices[to] || 1
+    const rate = fromPrice / toPrice
+    const fee = amount * 0.002
+    const output = (amount - fee) * rate * (1 - slip / 100)
+    return { outputAmount: output }
   }
 
   return (
@@ -70,7 +93,7 @@ export default function Swap() {
             <div className="bg-white/5 rounded-2xl p-5 border border-white/10 hover:border-pudl-aqua/30 transition-colors">
               <div className="flex justify-between mb-3">
                 <span className="text-sm text-gray-400 font-semibold">You Pay</span>
-                <span className="text-sm text-gray-400">Balance: 0.00</span>
+                <span className="text-sm text-gray-400">Balance: {getBalance(fromToken)}</span>
               </div>
               <div className="flex gap-3 items-center">
                 <input
@@ -112,7 +135,7 @@ export default function Swap() {
             <div className="bg-white/5 rounded-2xl p-5 border border-white/10 hover:border-pudl-aqua/30 transition-colors">
               <div className="flex justify-between mb-3">
                 <span className="text-sm text-gray-400 font-semibold">You Receive</span>
-                <span className="text-sm text-gray-400">Balance: 0.00</span>
+                <span className="text-sm text-gray-400">Balance: {getBalance(toToken)}</span>
               </div>
               <div className="flex gap-3 items-center">
                 <input

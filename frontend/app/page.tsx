@@ -1,14 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { mockProtocolStats } from '@/lib/mockData'
 
 export default function Home() {
   const { connected } = useWallet()
   const [copied, setCopied] = useState(false)
+  const [stats, setStats] = useState(mockProtocolStats)
 
   const contractAddress = "PUDLxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" // Placeholder
+
+  useEffect(() => {
+    // In production, fetch real stats from API
+    setStats(mockProtocolStats)
+  }, [])
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(contractAddress)
@@ -96,10 +103,10 @@ export default function Home() {
         {/* Stats */}
         <section className="max-w-7xl mx-auto px-4 mb-20">
           <div className="grid md:grid-cols-4 gap-4">
-            <StatCard label="Total Value Locked" value="$0.00" />
-            <StatCard label="24h Volume" value="$0.00" />
-            <StatCard label="Active Pools" value="0" />
-            <StatCard label="Total Stakers" value="0" />
+            <StatCard label="Total Value Locked" value={`$${stats.tvl.toLocaleString()}`} />
+            <StatCard label="24h Volume" value={`$${stats.volume24h.toLocaleString()}`} />
+            <StatCard label="Active Pools" value={stats.totalPools.toString()} />
+            <StatCard label="Total Stakers" value={stats.totalStakers.toLocaleString()} />
           </div>
         </section>
 

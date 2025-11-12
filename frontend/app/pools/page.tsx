@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { mockPools } from '@/lib/mockData'
 
 interface Pool {
   address: string
@@ -23,11 +24,13 @@ export default function Pools() {
 
   const fetchPools = async () => {
     try {
+      // Try to fetch from API, fallback to mock data
       const response = await fetch('http://localhost:3001/api/pools')
       const data = await response.json()
-      setPools(data.pools || [])
+      setPools(data.pools && data.pools.length > 0 ? data.pools : mockPools)
     } catch (error) {
-      console.error('Error fetching pools:', error)
+      console.error('Using mock data:', error)
+      setPools(mockPools)
     } finally {
       setLoading(false)
     }
