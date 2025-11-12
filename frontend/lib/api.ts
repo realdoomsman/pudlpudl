@@ -1,24 +1,100 @@
 // Real API integrations for production
 
 const BIRDEYE_API = 'https://public-api.birdeye.so';
-const JUPITER_PRICE_API = 'https://price.jup.ag/v4';
+const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 
-// Get real-time token prices
+// Map token symbols to CoinGecko IDs
+const COINGECKO_IDS: Record<string, string> = {
+  SOL: 'solana',
+  USDC: 'usd-coin',
+  USDT: 'tether',
+  BONK: 'bonk',
+  JUP: 'jupiter-exchange-solana',
+  WIF: 'dogwifcoin',
+};
+
+// Get real-time token prices from CoinGecko
 export async function getTokenPrices(tokens: string[]): Promise<Record<string, number>> {
   try {
-    const ids = tokens.join(',');
-    const response = await fetch(`${JUPITER_PRICE_API}/price?ids=${ids}`);
+    const prices: Record<string, number> = {};
+    
+    // Map mints to CoinGecko IDs
+    const symbolToMint: Record<string, string> = {};
+    Object.entries(TOKEN_MINTS).forEach(([symbol, mint]) => {
+      symbolToMint[symbol] = mint;
+    });
+    
+    const mintToSymbol: Record<string, string> = {};
+    Object.entries(TOKEN_MINTS).forEach(([symbol, mint]) => {
+      mintToSymbol[mint] = symbol;
+    });
+    
+    const ids = tokens
+      .map(mint => {
+        const symbol = mintToSymbol[mint];
+        return symbol ? COINGECKO_IDS[symbol] : null;
+      })
+      .filter(Boolean)
+      .join(',');
+    
+    if (!ids) return {};
+    
+    const response = await fetch(
+      `${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=usd`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
     
-    const prices: Record<string, number> = {};
-    Object.entries(data.data).forEach(([mint, info]: [string, any]) => {
-      prices[mint] = info.price;
+    // Map back to mint addresses
+    tokens.forEach(mint => {
+      const symbol = mintToSymbol[mint];
+      if (symbol && COINGECKO_IDS[symbol]) {
+        const cgId = COINGECKO_IDS[symbol];
+        if (data[cgId]?.usd) {
+          prices[mint] = data[cgId].usd;
+        }
+      }
     });
     
     return prices;
   } catch (error) {
     console.error('Error fetching prices:', error);
     return {};
+  }
+}
+
+// Get single token price from CoinGecko
+export async function getTokenPrice(tokenMint: string): Promise<number> {
+  try {
+    // Find symbol for this mint
+    const mintToSymbol: Record<string, string> = {};
+    Object.entries(TOKEN_MINTS).forEach(([symbol, mint]) => {
+      mintToSymbol[mint] = symbol;
+    });
+    
+    const symbol = mintToSymbol[tokenMint];
+    if (!symbol || !COINGECKO_IDS[symbol]) {
+      return 0;
+    }
+    
+    const cgId = COINGECKO_IDS[symbol];
+    const response = await fetch(
+      `${COINGECKO_API}/simple/price?ids=${cgId}&vs_currencies=usd`
+    );
+    
+    if (!response.ok) {
+      return 0;
+    }
+    
+    const data = await response.json();
+    return data[cgId]?.usd || 0;
+  } catch (error) {
+    console.error('Error fetching price:', error);
+    return 0;
   }
 }
 
