@@ -1,0 +1,27 @@
+{
+  "name": "pudlpudl-backend",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "listener": "tsx watch src/listener.ts",
+    "db:setup": "psql -U postgres -f src/db/schema.sql"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6",
+    "@coral-xyz/anchor": "^0.29.0",
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/pg": "^8.10.9",
+    "@types/cors": "^2.8.17",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
