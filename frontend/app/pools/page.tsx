@@ -26,13 +26,7 @@ export default function Pools() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-white">Liquidity Pools</h1>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-green-500/10 border border-green-500/20 rounded">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-green-400 font-medium">Live</span>
-              </div>
-            </div>
+            <h1 className="text-3xl font-bold text-white mb-2">Liquidity Pools</h1>
             <p className="text-gray-400">Browse active pools and provide liquidity to earn trading fees</p>
           </div>
           <Link
@@ -69,28 +63,6 @@ export default function Pools() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search pools..."
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-pudl-green/50 transition-colors"
-            />
-          </div>
-          <select className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-pudl-green/50 transition-colors">
-            <option>All Pools</option>
-            <option>SOL Pairs</option>
-            <option>USDC Pairs</option>
-            <option>PUDL Pairs</option>
-          </select>
-          <select className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-pudl-green/50 transition-colors">
-            <option>Sort by TVL</option>
-            <option>Sort by Volume</option>
-            <option>Sort by APR</option>
-          </select>
-        </div>
-
         {/* Table */}
         {loading ? (
           <div className="card p-12 rounded-xl text-center">
@@ -115,43 +87,22 @@ export default function Pools() {
                     className="border-b border-white/5 hover:bg-white/[0.02] transition-colors cursor-pointer group"
                   >
                     <td className="px-6 py-4">
-                      <Link href={`/pools/${pool.address}`} className="block">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pudl-green to-pudl-purple flex items-center justify-center text-sm font-bold">
-                            {pool.baseMint[0]}{pool.quoteMint[0]}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-white group-hover:text-pudl-green transition-colors">
-                              {pool.baseMint}/{pool.quoteMint}
-                            </div>
-                            <div className="text-xs text-gray-500 font-mono">{pool.address.slice(0, 8)}...{pool.address.slice(-6)}</div>
-                          </div>
-                        </div>
+                      <Link href={`/pools/${pool.address}`} className="hover:text-pudl-green transition-colors">
+                        <div className="font-semibold text-white">{pool.baseMint}/{pool.quoteMint}</div>
+                        <div className="text-xs text-gray-500 font-mono">{pool.address.slice(0, 8)}...</div>
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="font-semibold text-white">${pool.tvl.toLocaleString()}</div>
-                      <div className="text-xs text-gray-500">
-                        {pool.tvl > 2000000 ? 'High liquidity' : pool.tvl > 1000000 ? 'Good liquidity' : 'Low liquidity'}
-                      </div>
+                    <td className="px-6 py-4 text-right font-semibold text-white">
+                      ${pool.tvl.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="text-white">${pool.volume24h.toLocaleString()}</div>
-                      <div className="text-xs text-gray-500">
-                        {((pool.volume24h / pool.tvl) * 100).toFixed(1)}% turnover
-                      </div>
+                    <td className="px-6 py-4 text-right text-gray-400">
+                      ${pool.volume24h.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="text-pudl-green font-semibold text-lg">
-                        {pool.apr.toFixed(1)}%
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {pool.apr > 30 ? 'High yield' : pool.apr > 20 ? 'Good yield' : 'Stable'}
-                      </div>
+                    <td className="px-6 py-4 text-right text-pudl-green font-semibold">
+                      {pool.apr.toFixed(1)}%
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="text-gray-400">{(pool.feeBps / 100).toFixed(2)}%</div>
-                      <div className="text-xs text-gray-600">fee tier</div>
+                    <td className="px-6 py-4 text-right text-gray-400">
+                      {(pool.feeBps / 100).toFixed(2)}%
                     </td>
                   </tr>
                 ))}
