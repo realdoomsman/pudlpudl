@@ -5,6 +5,9 @@ import { useState } from 'react'
 import WalletButton from '@/components/WalletButton'
 import ImprovedSwapWidget from '@/components/ImprovedSwapWidget'
 import { PUDL_TOKEN_CA } from '@/lib/pudlToken'
+import { StatsGrid } from '@/components/AnimatedStats'
+import PriceChart from '@/components/PriceChart'
+import LiveTransactions from '@/components/LiveTransactions'
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -124,6 +127,20 @@ export default function Home() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 pb-8">
+        <StatsGrid
+          stats={[
+            { label: 'Total Value Locked', value: '12,450,000', change: 15.3 },
+            { label: 'Total Volume', value: '45,230,000', change: 8.7 },
+            { label: 'Active Pools', value: '156', prefix: '', change: 12.1 },
+            { label: 'Total Users', value: '8,942', prefix: '', change: 23.4 },
+          ]}
+        />
+
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          <PriceChart tokenPair="SOL/USDC" />
+          <LiveTransactions />
+        </div>
+
         <ContractAddress />
 
         <div className="mb-12">
