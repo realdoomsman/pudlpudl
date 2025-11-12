@@ -10,18 +10,26 @@ const config: Config = {
     extend: {
       colors: {
         pudl: {
-          aqua: '#00E0B8',
-          purple: '#5B4AF0',
+          green: '#14F195',
+          purple: '#9945FF',
+          dark: '#0D0D0D',
+          darker: '#080808',
+          gray: {
+            100: '#F7F7F7',
+            200: '#E5E5E5',
+            300: '#D4D4D4',
+            400: '#A3A3A3',
+            500: '#737373',
+            600: '#525252',
+            700: '#404040',
+            800: '#262626',
+            900: '#171717',
+          },
         },
       },
-      animation: {
-        'pulse': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
-        pulse: {
-          '0%, 100%': { opacity: '0.3' },
-          '50%': { opacity: '0.6' },
-        },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
     },
   },

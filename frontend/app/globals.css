@@ -6,7 +6,8 @@
 
 @layer base {
   body {
-    @apply bg-[#0a0e27] text-white antialiased;
+    @apply bg-[#0D0D0D] text-white antialiased;
+    font-feature-settings: 'ss01' on, 'ss02' on, 'cv01' on, 'cv03' on;
   }
   
   * {
@@ -15,39 +16,43 @@
 }
 
 @layer utilities {
-  .glow-text {
-    text-shadow: 0 0 40px rgba(0, 224, 184, 0.4),
-                 0 0 80px rgba(0, 224, 184, 0.2);
-  }
-  
-  .glow-box {
-    box-shadow: 0 0 40px rgba(0, 224, 184, 0.15),
-                0 0 80px rgba(91, 74, 240, 0.1);
-  }
-  
+  /* Subtle gradient for accents */
   .pudl-gradient {
-    background: linear-gradient(135deg, #00E0B8 0%, #5B4AF0 100%);
+    background: linear-gradient(90deg, #14F195 0%, #9945FF 100%);
   }
   
   .pudl-gradient-text {
-    background: linear-gradient(135deg, #00E0B8 0%, #5B4AF0 100%);
+    background: linear-gradient(90deg, #14F195 0%, #9945FF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
-  .glass {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  /* Modern card style */
+  .card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
   }
   
-  .delay-1000 {
-    animation-delay: 1s;
+  .card-hover {
+    @apply card transition-all duration-200;
   }
   
-  .delay-500 {
-    animation-delay: 0.5s;
+  .card-hover:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(20, 241, 149, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  /* Minimal glow for interactive elements */
+  .glow-green {
+    box-shadow: 0 0 20px rgba(20, 241, 149, 0.1);
+  }
+  
+  .glow-green:hover {
+    box-shadow: 0 0 30px rgba(20, 241, 149, 0.2);
   }
 }
 
