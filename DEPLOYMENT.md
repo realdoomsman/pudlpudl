@@ -104,6 +104,8 @@ npm run listener
 
 ## Step 8: Start Frontend
 
+### Local Development
+
 ```bash
 cd frontend
 
@@ -115,6 +117,33 @@ npm run dev
 
 # Open http://localhost:3000
 ```
+
+### Vercel Deployment
+
+The frontend is configured to deploy automatically to Vercel:
+
+1. **Automatic Deployment**: Push to `main` branch triggers deployment
+2. **Build Configuration**: Defined in `vercel.json`
+   - Build command: `cd frontend && npm run build`
+   - Output directory: `frontend/.next`
+   - Framework: Next.js
+3. **Environment Variables**: Set in Vercel dashboard
+   - `NEXT_PUBLIC_RPC_URL`: Solana RPC endpoint
+   - `NEXT_PUBLIC_API_URL`: Backend API URL (optional)
+
+**Manual Deployment**:
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+**Check Deployment Status**:
+- Visit your Vercel dashboard
+- Check build logs for any errors
+- Test the deployed URL
 
 ## Step 9: Verify Deployment
 
