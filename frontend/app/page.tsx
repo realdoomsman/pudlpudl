@@ -7,6 +7,7 @@ import ImprovedSwapWidget from '@/components/ImprovedSwapWidget'
 import { PUDL_TOKEN_CA } from '@/lib/pudlToken'
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   return (
     <div className="min-h-screen bg-[#0D0D0D]">
@@ -15,7 +16,9 @@ export default function Home() {
           <Link href="/" className="text-2xl font-bold text-white">
             PUDL
           </Link>
-          <div className="flex items-center gap-8">
+          
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-8">
             <Link href="/pools" className="text-sm text-gray-400 hover:text-white transition-colors">
               Pools
             </Link>
@@ -33,7 +36,47 @@ export default function Home() {
             </Link>
             <WalletButton />
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white p-2"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-white/10 bg-black/95 backdrop-blur-xl">
+            <div className="px-6 py-4 space-y-4">
+              <Link href="/pools" className="block text-sm text-gray-400 hover:text-white transition-colors">
+                Pools
+              </Link>
+              <Link href="/swap" className="block text-sm text-gray-400 hover:text-white transition-colors">
+                Swap
+              </Link>
+              <Link href="/stake" className="block text-sm text-gray-400 hover:text-white transition-colors">
+                Stake
+              </Link>
+              <Link href="/portfolio" className="block text-sm text-gray-400 hover:text-white transition-colors">
+                Portfolio
+              </Link>
+              <Link href="/referrals" className="block text-sm text-gray-400 hover:text-white transition-colors">
+                Referrals
+              </Link>
+              <div className="pt-4">
+                <WalletButton />
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       <div className="relative">
@@ -97,6 +140,27 @@ export default function Home() {
             <FeatureCard
               title="Permissionless"
               description="Anyone can create pools and provide liquidity without restrictions"
+            />
+          </div>
+        </div>
+
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-6">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <StepCard
+              step="1"
+              title="Connect Wallet"
+              description="Connect your Solana wallet to get started with PUDL Protocol"
+            />
+            <StepCard
+              step="2"
+              title="Swap or Provide Liquidity"
+              description="Trade tokens instantly or provide liquidity to earn fees"
+            />
+            <StepCard
+              step="3"
+              title="Earn Rewards"
+              description="Stake PUDL tokens to earn protocol fees and governance rights"
             />
           </div>
         </div>
@@ -227,6 +291,18 @@ function FeatureCard({ title, description }: { title: string; description: strin
   return (
     <div className="bg-white/5 border border-white/10 rounded-lg p-5 hover:bg-white/10 hover:border-blue-500/30 transition-all duration-300">
       <h3 className="text-base font-semibold text-white mb-2">{title}</h3>
+      <p className="text-sm text-gray-400">{description}</p>
+    </div>
+  )
+}
+
+function StepCard({ step, title, description }: { step: string; title: string; description: string }) {
+  return (
+    <div className="relative bg-white/5 border border-white/10 rounded-lg p-6 hover:bg-white/10 hover:border-blue-500/30 transition-all duration-300">
+      <div className="absolute -top-3 -left-3 w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+        {step}
+      </div>
+      <h3 className="text-lg font-semibold text-white mb-2 mt-2">{title}</h3>
       <p className="text-sm text-gray-400">{description}</p>
     </div>
   )
