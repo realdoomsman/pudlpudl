@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { mockPools } from '@/lib/mockData'
+import { usePools } from '@/lib/hooks/usePools'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { PageContainer } from '@/components/PageContainer'
@@ -18,26 +18,8 @@ interface Pool {
 }
 
 export default function Pools() {
-  const [pools, setPools] = useState<Pool[]>([])
-  const [loading, setLoading] = useState(true)
+  const { pools, loading } = usePools()
   const [filter, setFilter] = useState<'all' | 'high-tvl' | 'high-apr'>('all')
-
-  useEffect(() => {
-    fetchPools()
-  }, [])
-
-  const fetchPools = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/api/pools')
-      const data = await response.json()
-      setPools(data.pools && data.pools.length > 0 ? data.pools : mockPools)
-    } catch (error) {
-      console.error('Using mock data:', error)
-      setPools(mockPools)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const filteredPools = pools.filter(pool => {
     if (filter === 'high-tvl') return pool.tvl_usd > 100000

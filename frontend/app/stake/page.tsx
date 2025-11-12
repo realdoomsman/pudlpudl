@@ -5,71 +5,25 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { PageContainer } from '@/components/PageContainer'
+import { useStaking } from '@/lib/hooks/useStaking'
 
 export default function Stake() {
   const { publicKey, connected } = useWallet()
+  const { stakingInfo, loading: stakingLoading, stake: stakeTokens, unstake: unstakeTokens, claimRewards: claimStakingRewards } = useStaking()
   
   const [stakeAmount, setStakeAmount] = useState('')
   const [unstakeAmount, setUnstakeAmount] = useState('')
-  const [userStake, setUserStake] = useState(0)
-  const [userTier, setUserTier] = useState(0)
-  const [pendingRewards, setPendingRewards] = useState(0)
-  const [stats, setStats] = useState({
-    totalStaked: 0,
-    apr: '0',
-    stakerCount: 0,
-  })
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetchStats()
-    if (connected && publicKey) {
-      fetchUserStake()
-    }
-  }, [connected, publicKey])
-
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/api/staking/stats')
-      const data = await response.json()
-      setStats(data.totalStaked ? data : {
-        totalStaked: 5420000,
-        stakerCount: 1247,
-        apr: '14.5',
-      })
-    } catch (error) {
-      console.error('Using mock stats:', error)
-      setStats({
-        totalStaked: 5420000,
-        stakerCount: 1247,
-        apr: '14.5',
-      })
-    }
+  const stats = {
+    totalStaked: stakingInfo?.totalStaked || 5420000,
+    stakerCount: 1247,
+    apr: stakingInfo?.apr.toString() || '10.5',
   }
 
-  const fetchUserStake = async () => {
-    if (!publicKey) return
-    
-    try {
-      const response = await fetch(`http://localhost:3001/api/staking/${publicKey.toString()}`)
-      const data = await response.json()
-      
-      if (data.stake) {
-        setUserStake(data.stake.amount)
-        setUserTier(data.stake.tier)
-      } else {
-        // Mock user data for demo
-        setUserStake(10000)
-        setUserTier(2)
-        setPendingRewards(125.5)
-      }
-    } catch (error) {
-      console.error('Using mock user data:', error)
-      setUserStake(10000)
-      setUserTier(2)
-      setPendingRewards(125.5)
-    }
-  }
+  const userStake = stakingInfo?.userStaked || 0
+  const userTier = stakingInfo?.tier || 0
+  const pendingRewards = stakingInfo?.pendingRewards || 0
 
   const handleStake = async () => {
     if (!connected) {
@@ -79,16 +33,11 @@ export default function Stake() {
 
     setLoading(true)
     try {
-      // In production: build and send transaction
-      console.log('Staking:', stakeAmount)
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await stakeTokens(parseFloat(stakeAmount))
       alert('Staked successfully!')
       setStakeAmount('')
-      fetchUserStake()
-      fetchStats()
     } catch (error) {
-      console.error('Error staking:', error)
-      alert('Failed to stake')
+      alert(error instanceof Error ? error.message : 'Failed to stake')
     } finally {
       setLoading(false)
     }
@@ -97,15 +46,11 @@ export default function Stake() {
   const handleUnstake = async () => {
     setLoading(true)
     try {
-      console.log('Unstaking:', unstakeAmount)
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await unstakeTokens(parseFloat(unstakeAmount))
       alert('Unstaked successfully!')
       setUnstakeAmount('')
-      fetchUserStake()
-      fetchStats()
     } catch (error) {
-      console.error('Error unstaking:', error)
-      alert('Failed to unstake')
+      alert(error instanceof Error ? error.message : 'Failed to unstake')
     } finally {
       setLoading(false)
     }
@@ -114,13 +59,10 @@ export default function Stake() {
   const handleClaim = async () => {
     setLoading(true)
     try {
-      console.log('Claiming rewards')
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await claimStakingRewards()
       alert('Rewards claimed!')
-      setPendingRewards(0)
     } catch (error) {
-      console.error('Error claiming:', error)
-      alert('Failed to claim')
+      alert(error instanceof Error ? error.message : 'Failed to claim')
     } finally {
       setLoading(false)
     }

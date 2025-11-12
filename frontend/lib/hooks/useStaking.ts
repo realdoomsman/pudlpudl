@@ -45,25 +45,17 @@ export function useStaking() {
       // Fetch staking account data
       const accountInfo = await connection.getAccountInfo(stakingAccountPda)
       
-      if (accountInfo) {
-        // TODO: Deserialize the staking account data
-        // For now, return placeholder data
-        setStakingInfo({
-          totalStaked: 1000000,
-          userStaked: 0,
-          pendingRewards: 0,
-          apr: 10.5,
-          tier: 0,
-        })
-      } else {
-        setStakingInfo({
-          totalStaked: 1000000,
-          userStaked: 0,
-          pendingRewards: 0,
-          apr: 10.5,
-          tier: 0,
-        })
-      }
+      // Using mock data for demo - replace with real deserialization when programs are deployed
+      const mockUserStake = Math.floor(Math.random() * 50000) + 5000
+      const mockTier = mockUserStake < 1000 ? 0 : mockUserStake < 10000 ? 1 : mockUserStake < 100000 ? 2 : 3
+      
+      setStakingInfo({
+        totalStaked: 5420000,
+        userStaked: mockUserStake,
+        pendingRewards: (mockUserStake * 0.105 * 30) / 365, // 30 days of rewards at 10.5% APR
+        apr: 10.5,
+        tier: mockTier,
+      })
     } catch (err) {
       console.error('Error fetching staking info:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch staking info')
