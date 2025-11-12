@@ -219,7 +219,6 @@ export default function Swap() {
             </ul>
           </div>
         </div>
-      </div>
 
       <Footer />
     </PageContainer>
