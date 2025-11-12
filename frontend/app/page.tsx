@@ -25,6 +25,12 @@ export default function Home() {
             <Link href="/stake" className="text-sm text-gray-400 hover:text-white transition-colors">
               Stake
             </Link>
+            <Link href="/portfolio" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Portfolio
+            </Link>
+            <Link href="/referrals" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Referrals
+            </Link>
             <WalletButton />
           </div>
         </div>
