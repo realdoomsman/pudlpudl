@@ -128,29 +128,33 @@ function ContractAddress() {
   }
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-8">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden mb-8">
+      <div className="px-4 py-3 border-b border-white/10">
         <div className="text-sm font-medium text-white">PUDL Token</div>
       </div>
-      <div className="bg-black/30 rounded p-3 mb-3">
-        <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Contract Address</div>
-        <code className="text-xs text-gray-300 break-all block font-mono">{PUDL_TOKEN_CA}</code>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          onClick={copyCA}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium transition-colors"
-        >
-          {copied ? '✓ Copied' : 'Copy'}
-        </button>
-        <a
-          href={`https://solscan.io/token/${PUDL_TOKEN_CA}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-sm font-medium transition-colors text-center"
-        >
-          Solscan
-        </a>
+      <div className="p-4">
+        <div className="mb-4">
+          <div className="text-xs text-gray-500 mb-2">Contract Address</div>
+          <div className="bg-black/40 rounded px-3 py-2 border border-white/5">
+            <code className="text-xs text-gray-300 break-all font-mono">{PUDL_TOKEN_CA}</code>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={copyCA}
+            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium transition-colors"
+          >
+            {copied ? '✓ Copied' : 'Copy'}
+          </button>
+          <a
+            href={`https://solscan.io/token/${PUDL_TOKEN_CA}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-sm font-medium transition-colors text-center"
+          >
+            Solscan
+          </a>
+        </div>
       </div>
     </div>
   )
