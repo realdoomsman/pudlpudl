@@ -68,3 +68,55 @@ export function calculateMinimumReceived(quote: JupiterQuote): number {
   const slippageMultiplier = 1 - (quote.slippageBps / 10000)
   return (outAmount * slippageMultiplier) / 1e9
 }
+
+export async function executeSwap(
+  quote: JupiterQuote,
+  userPublicKey: string,
+  signTransaction: any
+): Promise<string> {
+  try {
+    // Get swap transaction from Jupiter
+    const swapResponse = await fetch('https://quote-api.jup.ag/v6/swap', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        quoteResponse: quote,
+        userPublicKey,
+        wrapAndUnwrapSol: true,
+        dynamicComputeUnitLimit: true,
+        prioritizationFeeLamports: 'auto'
+      })
+    })
+
+    if (!swapResponse.ok) {
+      throw new Error('Failed to get swap transaction')
+    }
+
+    const { swapTransaction } = await swapResponse.json()
+    
+    // Deserialize and sign the transaction
+    const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
+    const transaction = VersionedTransaction.deserialize(swapTransactionBuf)
+    
+    const signedTransaction = await signTransaction(transaction)
+    
+    // Send transaction
+    const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || 'https://api.mainnet-beta.solana.com')
+    const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+      skipPreflight: false,
+      maxRetries: 3
+    })
+    
+    // Confirm transaction
+    await connection.confirmTransaction(signature, 'confirmed')
+    
+    return signature
+  } catch (error) {
+    console.error('Error executing swap:', error)
+    throw error
+  }
+}
+
+import { Connection, VersionedTransaction } from '@solana/web3.js'

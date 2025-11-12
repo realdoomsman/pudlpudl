@@ -95,7 +95,7 @@ export default function ImprovedSwapWidget() {
   }
 
   const handleSwap = async () => {
-    if (!connected) {
+    if (!connected || !publicKey) {
       setError('Please connect your wallet')
       return
     }
@@ -108,8 +108,38 @@ export default function ImprovedSwapWidget() {
       return
     }
     
-    // TODO: Implement actual swap transaction
-    alert('Swap functionality coming soon!')
+    try {
+      setLoading(true)
+      setError('')
+      
+      // Execute swap via Jupiter
+      const { executeSwap } = await import('../lib/jupiter')
+      const signature = await executeSwap(quote, publicKey.toString(), async (tx: any) => {
+        // Sign transaction using wallet adapter
+        const wallet = (window as any).solana
+        if (wallet) {
+          return await wallet.signTransaction(tx)
+        }
+        throw new Error('Wallet not found')
+      })
+      
+      // Success!
+      alert(`Swap successful! Transaction: ${signature}`)
+      
+      // Refresh balances
+      await fetchBalances()
+      
+      // Reset form
+      setFromAmount('')
+      setToAmount('')
+      setQuote(null)
+      
+    } catch (err: any) {
+      console.error('Swap error:', err)
+      setError(err.message || 'Swap failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleFlipTokens = () => {
