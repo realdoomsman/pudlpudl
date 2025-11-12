@@ -128,29 +128,29 @@ function ContractAddress() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4 md:p-5 mb-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-white mb-2">PUDL Token</div>
-          <div className="text-xs text-gray-400 mb-1">Contract Address</div>
-          <code className="text-xs md:text-sm text-blue-400 break-all block">{PUDL_TOKEN_CA}</code>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={copyCA}
-            className="flex-1 md:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
-          >
-            {copied ? '✓ Copied!' : 'Copy CA'}
-          </button>
-          <a
-            href={`https://solscan.io/token/${PUDL_TOKEN_CA}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 md:flex-none px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition-colors whitespace-nowrap text-center"
-          >
-            View on Solscan
-          </a>
-        </div>
+    <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-8">
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-sm font-medium text-white">PUDL Token</div>
+      </div>
+      <div className="bg-black/30 rounded p-3 mb-3">
+        <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Contract Address</div>
+        <code className="text-xs text-gray-300 break-all block font-mono">{PUDL_TOKEN_CA}</code>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={copyCA}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium transition-colors"
+        >
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+        <a
+          href={`https://solscan.io/token/${PUDL_TOKEN_CA}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-sm font-medium transition-colors text-center"
+        >
+          Solscan
+        </a>
       </div>
     </div>
   )
