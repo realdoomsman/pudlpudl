@@ -1,5 +1,6 @@
 {
-  "github": {
-    "silent": true
-  }
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/.next",
+  "installCommand": "echo 'Dependencies installed in buildCommand'",
+  "framework": null
 }
