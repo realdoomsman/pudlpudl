@@ -22,21 +22,24 @@ export default function Home() {
           
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="/pools" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Pools
-            </Link>
             <Link href="/swap" className="text-sm text-gray-400 hover:text-white transition-colors">
               Swap
-            </Link>
-            <Link href="/stake" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Stake
             </Link>
             <Link href="/portfolio" className="text-sm text-gray-400 hover:text-white transition-colors">
               Portfolio
             </Link>
-            <Link href="/referrals" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Referrals
-            </Link>
+            <div className="relative group">
+              <span className="text-sm text-gray-600 cursor-not-allowed">Pools</span>
+              <div className="absolute hidden group-hover:block top-full mt-2 bg-gray-900 text-xs text-gray-300 px-3 py-2 rounded whitespace-nowrap">
+                Coming Soon
+              </div>
+            </div>
+            <div className="relative group">
+              <span className="text-sm text-gray-600 cursor-not-allowed">Stake</span>
+              <div className="absolute hidden group-hover:block top-full mt-2 bg-gray-900 text-xs text-gray-300 px-3 py-2 rounded whitespace-nowrap">
+                Coming Soon
+              </div>
+            </div>
             <WalletButton />
           </div>
 
@@ -176,17 +179,16 @@ export default function Home() {
         </div>
 
         <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Featured Pools</h2>
-            <Link href="/pools" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
-              View All →
-            </Link>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
-            <div className="text-gray-400 mb-4">No pools created yet</div>
-            <Link href="/create" className="inline-block px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg text-sm font-medium text-white transition-all shadow-lg shadow-blue-500/20">
-              Create First Pool
-            </Link>
+          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-8 text-center">
+            <h2 className="text-2xl font-bold text-white mb-3">Liquidity Pools Coming Soon</h2>
+            <p className="text-gray-400 mb-6">
+              We're launching with swap functionality first. Pool creation and staking will be available after mainnet deployment.
+            </p>
+            <div className="flex justify-center gap-4">
+              <Link href="/swap" className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg text-sm font-medium text-white transition-all shadow-lg shadow-blue-500/20">
+                Start Swapping Now
+              </Link>
+            </div>
           </div>
         </div>
 

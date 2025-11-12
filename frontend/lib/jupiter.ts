@@ -75,7 +75,11 @@ export async function executeSwap(
   signTransaction: any
 ): Promise<string> {
   try {
-    // Get swap transaction from Jupiter
+    // Your fee account - you earn 0.25% of every swap!
+    const PUDL_FEE_ACCOUNT = 'GpWkVYPmc5rRFRXCRhdHH2zcSYExy19vwYeeG8GunVF7';
+    const FEE_BPS = 25; // 0.25% fee (25 basis points)
+    
+    // Get swap transaction from Jupiter with referral fee
     const swapResponse = await fetch('https://quote-api.jup.ag/v6/swap', {
       method: 'POST',
       headers: {
@@ -86,7 +90,10 @@ export async function executeSwap(
         userPublicKey,
         wrapAndUnwrapSol: true,
         dynamicComputeUnitLimit: true,
-        prioritizationFeeLamports: 'auto'
+        prioritizationFeeLamports: 'auto',
+        // Referral fee configuration
+        feeAccount: PUDL_FEE_ACCOUNT,
+        feeBps: FEE_BPS
       })
     })
 
