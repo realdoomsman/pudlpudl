@@ -22,8 +22,8 @@ export default function Pools() {
   const [filter, setFilter] = useState<'all' | 'high-tvl' | 'high-apr'>('all')
 
   const filteredPools = pools.filter(pool => {
-    if (filter === 'high-tvl') return pool.tvl_usd > 100000
-    if (filter === 'high-apr') return pool.fee_apr_24h > 10
+    if (filter === 'high-tvl') return pool.tvl > 100000
+    if (filter === 'high-apr') return pool.apr > 10
     return true
   })
 
@@ -47,13 +47,13 @@ export default function Pools() {
           <div className="glass rounded-xl p-6 border border-white/10">
             <p className="text-gray-400 text-sm mb-2 font-semibold">Total TVL</p>
             <p className="text-3xl font-black text-white">
-              ${pools.reduce((sum, p) => sum + p.tvl_usd, 0).toLocaleString()}
+              ${pools.reduce((sum, p) => sum + p.tvl, 0).toLocaleString()}
             </p>
           </div>
           <div className="glass rounded-xl p-6 border border-white/10">
             <p className="text-gray-400 text-sm mb-2 font-semibold">24h Volume</p>
             <p className="text-3xl font-black text-white">
-              ${pools.reduce((sum, p) => sum + p.volume_24h, 0).toLocaleString()}
+              ${pools.reduce((sum, p) => sum + p.volume24h, 0).toLocaleString()}
             </p>
           </div>
         </div>
@@ -141,16 +141,16 @@ export default function Pools() {
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-white">
-                      ${pool.tvl_usd?.toLocaleString() || '0'}
+                      ${pool.tvl?.toLocaleString() || '0'}
                     </td>
                     <td className="px-6 py-4 text-right font-semibold text-gray-300">
-                      ${pool.volume_24h?.toLocaleString() || '0'}
+                      ${pool.volume24h?.toLocaleString() || '0'}
                     </td>
                     <td className="px-6 py-4 text-right text-green-400 font-bold">
-                      {pool.fee_apr_24h?.toFixed(2) || '0.00'}%
+                      {pool.apr?.toFixed(2) || '0.00'}%
                     </td>
                     <td className="px-6 py-4 text-right text-gray-300 font-semibold">
-                      {(pool.fee_bps / 100).toFixed(2)}%
+                      {(pool.feeBps / 100).toFixed(2)}%
                     </td>
                   </tr>
                 ))}
