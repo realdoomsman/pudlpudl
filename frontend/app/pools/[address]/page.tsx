@@ -27,20 +27,20 @@ export default function PoolDetail({ params }: { params: Promise<{ address: stri
     <div className="min-h-screen bg-pudl-dark">
       {/* Nav */}
       <nav className="border-b border-white/5 backdrop-blur-xl bg-pudl-dark/80">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold">PUDL</Link>
-          <div className="flex items-center gap-8">
-            <Link href="/pools" className="text-sm text-white">Pools</Link>
-            <Link href="/swap" className="text-sm text-gray-400 hover:text-white transition-colors">Swap</Link>
-            <Link href="/stake" className="text-sm text-gray-400 hover:text-white transition-colors">Stake</Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-xl sm:text-2xl font-bold">PUDL</Link>
+          <div className="flex items-center gap-4 sm:gap-8">
+            <Link href="/pools" className="text-xs sm:text-sm text-white">Pools</Link>
+            <Link href="/swap" className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors">Swap</Link>
+            <Link href="/stake" className="hidden sm:inline text-sm text-gray-400 hover:text-white transition-colors">Stake</Link>
             <WalletButton />
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Back Button */}
-        <Link href="/pools" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors">
+        <Link href="/pools" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors text-sm">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -48,53 +48,53 @@ export default function PoolDetail({ params }: { params: Promise<{ address: stri
         </Link>
 
         {/* Pool Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
               {pool.baseMint}/{pool.quoteMint}
             </h1>
-            <span className="text-sm text-gray-400 font-mono">{pool.address}</span>
+            <span className="text-xs sm:text-sm text-gray-400 font-mono break-all">{pool.address}</span>
           </div>
           <div className="flex gap-3">
-            <button className="px-6 py-3 bg-pudl-green text-black rounded-lg font-semibold hover:bg-pudl-green/90 transition-all">
-              Add Liquidity
+            <button className="flex-1 sm:flex-none px-4 sm:px-6 py-3 bg-pudl-green text-black rounded-lg font-semibold hover:bg-pudl-green/90 transition-all text-sm sm:text-base">
+              Add
             </button>
-            <button className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg font-semibold hover:bg-white/10 transition-all">
-              Remove Liquidity
+            <button className="flex-1 sm:flex-none px-4 sm:px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg font-semibold hover:bg-white/10 transition-all text-sm sm:text-base">
+              Remove
             </button>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="card p-6 rounded-xl">
-            <div className="text-sm text-gray-400 mb-2">TVL</div>
-            <div className="text-3xl font-bold text-white">
-              ${pool.tvl.toLocaleString()}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+          <div className="card p-4 sm:p-6 rounded-xl">
+            <div className="text-xs sm:text-sm text-gray-400 mb-2">TVL</div>
+            <div className="text-xl sm:text-3xl font-bold text-white">
+              ${(pool.tvl / 1000000).toFixed(2)}M
             </div>
           </div>
-          <div className="card p-6 rounded-xl">
-            <div className="text-sm text-gray-400 mb-2">24h Volume</div>
-            <div className="text-3xl font-bold text-white">
-              ${pool.volume24h.toLocaleString()}
+          <div className="card p-4 sm:p-6 rounded-xl">
+            <div className="text-xs sm:text-sm text-gray-400 mb-2">24h Volume</div>
+            <div className="text-xl sm:text-3xl font-bold text-white">
+              ${(pool.volume24h / 1000).toFixed(0)}K
             </div>
           </div>
-          <div className="card p-6 rounded-xl">
-            <div className="text-sm text-gray-400 mb-2">APR</div>
-            <div className="text-3xl font-bold text-pudl-green">
+          <div className="card p-4 sm:p-6 rounded-xl">
+            <div className="text-xs sm:text-sm text-gray-400 mb-2">APR</div>
+            <div className="text-xl sm:text-3xl font-bold text-pudl-green">
               {pool.apr.toFixed(1)}%
             </div>
           </div>
-          <div className="card p-6 rounded-xl">
-            <div className="text-sm text-gray-400 mb-2">Fee</div>
-            <div className="text-3xl font-bold text-white">
+          <div className="card p-4 sm:p-6 rounded-xl">
+            <div className="text-xs sm:text-sm text-gray-400 mb-2">Fee</div>
+            <div className="text-xl sm:text-3xl font-bold text-white">
               {(pool.feeBps / 100).toFixed(2)}%
             </div>
           </div>
         </div>
 
         {/* Pool Info */}
-        <div className="grid grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
           {/* Liquidity Distribution */}
           <div className="card p-6 rounded-xl">
             <h2 className="text-xl font-bold text-white mb-4">Liquidity Distribution</h2>
