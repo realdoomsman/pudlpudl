@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { Footer } from '@/components/Footer';
 
 export default function ReferralsPage() {
   const { publicKey, connected } = useWallet();
@@ -124,6 +125,8 @@ export default function ReferralsPage() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
