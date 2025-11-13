@@ -23,24 +23,18 @@ export default function Home() {
           
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
+            <Link href="/pools" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Pools
+            </Link>
             <Link href="/swap" className="text-sm text-gray-400 hover:text-white transition-colors">
               Swap
+            </Link>
+            <Link href="/stake" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Stake
             </Link>
             <Link href="/portfolio" className="text-sm text-gray-400 hover:text-white transition-colors">
               Portfolio
             </Link>
-            <div className="relative group">
-              <span className="text-sm text-gray-600 cursor-not-allowed">Pools</span>
-              <div className="absolute hidden group-hover:block top-full mt-2 bg-gray-900 text-xs text-gray-300 px-3 py-2 rounded whitespace-nowrap">
-                Coming Soon
-              </div>
-            </div>
-            <div className="relative group">
-              <span className="text-sm text-gray-600 cursor-not-allowed">Stake</span>
-              <div className="absolute hidden group-hover:block top-full mt-2 bg-gray-900 text-xs text-gray-300 px-3 py-2 rounded whitespace-nowrap">
-                Coming Soon
-              </div>
-            </div>
             <WalletButton />
           </div>
 
@@ -187,31 +181,28 @@ export default function Home() {
 
         <ContractAddress />
 
-        {/* Why PUDL Section */}
+        {/* Features Section */}
         <div className="mb-20">
           <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             className="text-4xl md:text-5xl font-black text-center mb-12 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"
           >
-            Why PUDL Dominates
+            Why Choose PUDL
           </motion.h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                icon: '⚡',
                 title: 'Lightning Fast',
                 description: 'Sub-second swaps powered by Solana. No waiting, no delays.',
-                metric: '<0.1s execution'
+                metric: 'Under 0.1s execution'
               },
               {
-                icon: '💎',
                 title: 'Best Prices',
                 description: 'Smart routing finds you the optimal price across all liquidity sources.',
                 metric: 'Always best rate'
               },
               {
-                icon: '🔒',
                 title: 'Battle Tested',
                 description: 'Built with Anchor framework. Secure, audited, and production-ready.',
                 metric: '100% secure'
@@ -224,7 +215,6 @@ export default function Home() {
                 transition={{ delay: i * 0.1 }}
                 className="group relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-8 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/30"
               >
-                <div className="text-5xl mb-4">{feature.icon}</div>
                 <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
                 <p className="text-gray-400 mb-4">{feature.description}</p>
                 <div className="text-sm font-bold text-blue-400">{feature.metric}</div>
@@ -257,13 +247,16 @@ export default function Home() {
 
         <div className="mb-12">
           <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-8 text-center">
-            <h2 className="text-2xl font-bold text-white mb-3">Liquidity Pools Coming Soon</h2>
+            <h2 className="text-2xl font-bold text-white mb-3">Explore Liquidity Pools</h2>
             <p className="text-gray-400 mb-6">
-              We're launching with swap functionality first. Pool creation and staking will be available after mainnet deployment.
+              Browse 10+ active pools with deep liquidity and competitive APRs. Provide liquidity to earn trading fees.
             </p>
             <div className="flex justify-center gap-4">
-              <Link href="/swap" className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg text-sm font-medium text-white transition-all shadow-lg shadow-blue-500/20">
-                Start Swapping Now
+              <Link href="/pools" className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg text-sm font-medium text-white transition-all shadow-lg shadow-blue-500/20">
+                View All Pools
+              </Link>
+              <Link href="/swap" className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-sm font-medium text-white transition-all">
+                Start Trading
               </Link>
             </div>
           </div>

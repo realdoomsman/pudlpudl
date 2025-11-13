@@ -1,25 +1,28 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
-import { WalletProvider } from '@/components/WalletProvider'
+import { Providers } from '@/app/providers'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://pudlpudl.vercel.app'),
-  title: 'PUDL Protocol - Concentrated Liquidity AMM on Solana',
-  description: 'Next-generation concentrated liquidity AMM on Solana. Trade tokens, provide liquidity, and earn rewards with PUDL Protocol.',
-  keywords: ['Solana', 'DeFi', 'AMM', 'DEX', 'Concentrated Liquidity', 'PUDL', 'Trading', 'Liquidity'],
+  title: 'PUDL Protocol | Deep Liquidity on Solana',
+  description: 'Revolutionary DLMM technology meets lightning-fast swaps. Trade, earn, and govern with PUDL Protocol on Solana.',
+  keywords: ['Solana', 'DeFi', 'DEX', 'DLMM', 'Liquidity', 'Swap', 'Trading', 'PUDL'],
   authors: [{ name: 'PUDL Protocol' }],
   openGraph: {
-    title: 'PUDL Protocol - Concentrated Liquidity AMM on Solana',
-    description: 'Next-generation concentrated liquidity AMM on Solana',
-    url: 'https://pudlpudl.vercel.app',
-    siteName: 'PUDL Protocol',
+    title: 'PUDL Protocol | Deep Liquidity on Solana',
+    description: 'Revolutionary DLMM technology meets lightning-fast swaps on Solana',
     type: 'website',
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PUDL Protocol - Concentrated Liquidity AMM on Solana',
-    description: 'Next-generation concentrated liquidity AMM on Solana',
+    title: 'PUDL Protocol',
+    description: 'Deep Liquidity on Solana',
   },
+  viewport: 'width=device-width, initial-scale=1',
+  themeColor: '#00E0B8',
 }
 
 export default function RootLayout({
@@ -29,10 +32,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gradient-to-br from-pudl-aqua/10 to-pudl-purple/10">
-        <WalletProvider>
+      <body className={inter.className}>
+        <Providers>
           {children}
-        </WalletProvider>
+        </Providers>
       </body>
     </html>
   )
