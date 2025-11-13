@@ -7,13 +7,12 @@ import { PublicKey } from '@solana/web3.js';
 
 export const PUDL_TOKEN_CONFIG = {
   // Token Mint Address (Contract Address)
-  // Replace this with your actual token mint address after deployment
-  mintAddress: 'So11111111111111111111111111111111111111112', // Placeholder - SOL mint as example
+  mintAddress: '5ShPkrm5oCjXcjFNESe42ys3tqcmXT7baF9nbEpcpump',
   
   // Token Metadata
   symbol: 'PUDL',
   name: 'PUDL Token',
-  decimals: 9,
+  decimals: 6,
   
   // Token Supply
   totalSupply: 1_000_000_000, // 1 billion tokens
@@ -23,8 +22,7 @@ export const PUDL_TOKEN_CONFIG = {
   
   // Social Links
   website: 'https://pudlpudl.vercel.app',
-  twitter: 'https://twitter.com/pudlprotocol',
-  discord: 'https://discord.gg/pudl',
+  twitter: 'https://x.com/PUDLfun',
   
   // Token Description
   description: 'The native governance and utility token of the PUDL Protocol',
