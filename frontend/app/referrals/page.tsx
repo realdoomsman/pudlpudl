@@ -49,7 +49,7 @@ export default function ReferralsPage() {
                   disabled={!connected}
                   className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded text-sm font-medium transition-colors"
                 >
-                  {copied ? '✓ Copied!' : 'Copy Referral Link'}
+                  {copied ? 'Copied!' : 'Copy Referral Link'}
                 </button>
               </div>
               {!connected && (
