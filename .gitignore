@@ -51,3 +51,9 @@ data/
 .pudl-dev-master.key
 master.key
 *.key
+
+# test wallet secret (never commit)
+server/.pudl-test-wallet.json
+.pudl-test-wallet.json
+LAUNCH.md
+TEST-RUNBOOK.md

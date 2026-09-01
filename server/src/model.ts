@@ -161,6 +161,25 @@ export const boosts: Boost[] = loadJson<any[]>('boosts.json', []).map((b) => ({
 })) as Boost[]
 export const saveBoosts = () => saveJson('boosts.json', boosts)
 
+// reconcile on load: a boost can never have paid out more than its pot, and every
+// accrued balance is non-negative (guards a torn write from double-crediting).
+for (const b of boosts) b.paidSol = Math.min(Math.max(0, Number(b.paidSol) || 0), Number(b.totalSol) || 0)
+for (const n of nets) if (!(n.boostAccruedSol >= 0)) n.boostAccruedSol = 0
+
+// Synchronous, durable write of the money ledger (nets + boosts). Used on the
+// claim / fund / accrue paths where a lost write can double-pay or strand SOL.
+export function saveLedgerSync() {
+  const units: Array<[string, unknown]> = [['nets.json', nets], ['boosts.json', boosts]]
+  for (const [file, data] of units) {
+    const t = writers.get(file); if (t) { clearTimeout(t); writers.delete(file) }
+    pending.delete(file)
+    try {
+      const p = path.join(DATA_DIR, file)
+      fs.writeFileSync(p + '.tmp', JSON.stringify(data)); fs.renameSync(p + '.tmp', p)
+    } catch (e: any) { console.error('[persist] sync ledger write failed:', file, String(e?.message ?? e).slice(0, 120)) }
+  }
+}
+
 /** Boost still live and with budget left. */
 export function activeBoosts(now = Date.now()): Boost[] {
   return boosts.filter((b) => b.endAt > now && b.paidSol < b.totalSol)
@@ -199,15 +218,17 @@ export function accrueBoosts(now = Date.now()): boolean {
     let release = b.totalSol * ((until - from) / windowMs)
     if (release <= 0) continue
     if (b.paidSol + release > b.totalSol) release = b.totalSol - b.paidSol
-    b.lastAccrualAt = until
     const live = nets.filter((n) => n.poolId === b.poolId && n.status === 'live')
     const totalStake = live.reduce((s, n) => s + n.amountSol, 0)
-    changed = true
-    if (totalStake <= 0) continue // no LPs this slice → nobody paid
+    // no LPs this slice → do NOT advance lastAccrualAt, so the budget waits for LPs
+    // instead of being stranded past an empty window.
+    if (totalStake <= 0) continue
+    b.lastAccrualAt = until
     for (const n of live) n.boostAccruedSol = (n.boostAccruedSol || 0) + release * (n.amountSol / totalStake)
     b.paidSol += release
+    changed = true
   }
-  if (changed) { saveNets(); saveBoosts() }
+  if (changed) saveLedgerSync()
   return changed
 }
 
@@ -233,6 +254,16 @@ export function markBoostClaimedUpTo(sub: string, cap: number): number {
   }
   if (claimed > 0) saveNets()
   return claimed
+}
+
+/** Undo a claim's ledger clear when the payout provably did not land. Caller
+ * persists (saveLedgerSync) after. */
+export function recreditBoostSol(sub: string, amount: number): void {
+  if (amount <= 0) return
+  const n = nets.find((x) => x.sub === sub)
+  if (!n) return
+  n.boostClaimedSol = Math.max(0, n.boostClaimedSol - amount)
+  n.boostAccruedSol = (n.boostAccruedSol || 0) + amount
 }
 
 // ------------------------------------------------------------- leaderboard

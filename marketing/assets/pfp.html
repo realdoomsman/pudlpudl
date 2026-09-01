@@ -1,92 +1,20 @@
-<head>
-<meta charset="utf-8">
-<title>PUDL — PFP 1000x1000</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: #000000; }
   .root {
-    position: absolute;
-    top: 0; left: 0;
-    width: 1000px;
-    height: 1000px;
-    overflow: hidden;
-    background: #000000;
-    font-family: 'Space Mono', monospace;
+    width: 1000px; height: 1000px; background: #000000;
+    display: flex; align-items: center; justify-content: center;
   }
-  .frame {
-    position: absolute;
-    top: 74px; left: 74px; right: 74px; bottom: 74px;
-    border: 1px dashed rgba(255,255,255,0.13);
-    border-radius: 2px;
-  }
-  .kicker {
-    position: absolute;
-    top: 132px; left: 0; right: 0;
-    text-align: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 0.34em;
-    text-indent: 0.34em;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-  }
-  .glyph {
-    position: absolute;
-    top: 208px; left: 50%;
-    transform: translateX(-50%);
-    width: 520px;
-    height: 520px;
-  }
-  .wordmark {
-    position: absolute;
-    left: 0; right: 0;
-    top: 748px;
-    text-align: center;
-    font-family: 'Archivo Black', sans-serif;
-    font-size: 118px;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    text-indent: -0.03em;
-    color: #ffffff;
-    text-transform: uppercase;
-  }
-  .tagline {
-    position: absolute;
-    left: 0; right: 0;
-    top: 890px;
-    text-align: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 0.32em;
-    text-indent: 0.32em;
-    color: #e8ff1e;
-    text-transform: uppercase;
-  }
+  .root svg { width: 1000px; height: 1000px; display: block; }
 </style>
-</head>
-<body>
-  <div class="root">
-    <div class="frame"></div>
-    <div class="kicker">SOLANA · BE THE HOUSE</div>
-    <svg class="glyph" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" fill="none">
-      <!-- tributaries: thin, white/grey -->
-      <path d="M70 70 C 150 130, 200 165, 260 240" stroke="rgba(255,255,255,0.42)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M452 108 C 372 190, 322 235, 286 300" stroke="rgba(255,255,255,0.42)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- main winding trunk: bold acid yellow, thickens downstream -->
-      <path d="M258 44 C 300 150, 214 210, 260 300 C 300 380, 330 405, 300 470"
-            stroke="#e8ff1e" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- source / mouth marks -->
-      <rect x="60" y="60" width="20" height="20" fill="rgba(255,255,255,0.55)"/>
-      <rect x="442" y="98" width="18" height="18" fill="rgba(255,255,255,0.55)"/>
-      <rect x="246" y="30" width="22" height="22" fill="#e8ff1e"/>
-      <rect x="286" y="456" width="30" height="30" fill="#e8ff1e"/>
-    </svg>
-    <div class="wordmark">PUDL</div>
-    <div class="tagline">CAST A NET · COLLECT THE FEES</div>
-  </div>
-</body>
+<!-- PUDL mark — a drop landing in a pool: the ripple. References the name
+     (PUDL = puddle) and the whole water/pools/rivers world. Wordless, flat
+     acid on black, reads as concentric water rings at 48px. -->
+<div class="root">
+  <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#e8ff1e" stroke-linecap="round">
+      <circle cx="500" cy="500" r="315" stroke-width="46" />
+      <circle cx="500" cy="500" r="205" stroke-width="52" />
+    </g>
+    <circle cx="500" cy="500" r="70" fill="#e8ff1e" />
+  </svg>
+</div>

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { pudl } from '@/lib/pudl'
 import { useAuth } from '@/lib/auth'
-import { fmtUsd, type River } from '@/lib/rivers'
+import { fmtUsd, fmtSol, type River } from '@/lib/rivers'
 
 const BANDS = [
   { label: 'Wide net', pct: 0.4, note: 'safer — catches less, survives big moves' },
@@ -140,14 +140,14 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
                   <span className="text-white/30 font-sans font-normal text-xs"> / $1k of pool · 24h</span>
                 </span>
               </div>
-              {river.boostPer1k > 0 && (
+              {river.boostPerDay > 0 && (
                 <div className="flex justify-between items-baseline mt-1.5">
                   <span className="text-[11px] uppercase tracking-widest text-gold">
                     + live boost
                   </span>
                   <span className="font-mono font-bold text-gold">
-                    {fmtUsd(river.boostPer1k)}
-                    <span className="text-white/30 font-sans font-normal text-xs"> / $1k&#183;day</span>
+                    {fmtSol(river.boostPerDay)}
+                    <span className="text-white/30 font-sans font-normal text-xs"> / day to LPs</span>
                   </span>
                 </div>
               )}

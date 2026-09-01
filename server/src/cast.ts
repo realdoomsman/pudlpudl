@@ -36,6 +36,16 @@ const SOL_DECIMALS = 9
 export const connection = new Connection(RPC_URL, 'confirmed')
 const txVersion = TxVersion.V0
 
+// Serialize balance-affecting ops per wallet so a concurrent harvest / close /
+// withdraw / boost-payout can't pollute another's SOL-balance-delta measurement.
+const accountChains = new Map<string, Promise<unknown>>()
+export function withAccountLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const prev = accountChains.get(key) ?? Promise.resolve()
+  const run = prev.then(fn, fn)
+  accountChains.set(key, run.then(() => {}, () => {}))
+  return run
+}
+
 // one Raydium client per account pubkey (keyed by string so it actually hits),
 // with a small LRU cap so long-running processes don't grow unbounded.
 const clients = new Map<string, Raydium>()
@@ -250,6 +260,40 @@ export async function withdrawSol(owner: Keypair, to: string, sol: number): Prom
   return sig
 }
 
+/**
+ * Like transferSol but never ambiguously "lost": returns { sig, landed }. On a
+ * confirm timeout it checks the real signature status and biases to landed=true
+ * when the outcome is unknown, so a caller that re-credits on !landed can never
+ * double-pay a transfer that actually settled. Throws only if the send itself
+ * fails (nothing broadcast).
+ */
+export async function transferSolResult(
+  from: Keypair,
+  to: string | PublicKey,
+  sol: number,
+): Promise<{ sig: string; landed: boolean }> {
+  const dest = to instanceof PublicKey ? to : new PublicKey(String(to))
+  const lamports = Math.floor(sol * 1e9)
+  if (lamports <= 0) throw new Error('amount too small')
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
+  const tx = new Transaction({ feePayer: from.publicKey, blockhash, lastValidBlockHeight }).add(
+    SystemProgram.transfer({ fromPubkey: from.publicKey, toPubkey: dest, lamports }),
+  )
+  const sig = await connection.sendTransaction(tx, [from]) // throws if never broadcast
+  try {
+    await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed')
+    return { sig, landed: true }
+  } catch {
+    for (let i = 0; i < 3; i++) {
+      const st = await connection.getSignatureStatus(sig, { searchTransactionHistory: true })
+      const v = st?.value
+      if (v && v.err === null && (v.confirmationStatus === 'confirmed' || v.confirmationStatus === 'finalized')) return { sig, landed: true }
+      if (v && v.err) return { sig, landed: false } // definitively failed on-chain → safe to re-credit
+    }
+    return { sig, landed: true } // unknown → assume paid, protect escrow
+  }
+}
+
 // ---------------------------------------------------------------- transfers
 
 /** Move SOL between wallets the server controls (e.g. into/out of escrow). */
@@ -341,5 +385,6 @@ export async function createCpmmPool(
   } as any)
   const { txId } = await execute({ sendAndConfirm: true })
   const poolId = String((extInfo as any)?.address?.poolId ?? '')
+  if (!poolId) throw new Error('pool created but poolId missing from SDK response — verify extInfo shape before enabling POOLS_ENABLED')
   return { txId, poolId }
 }

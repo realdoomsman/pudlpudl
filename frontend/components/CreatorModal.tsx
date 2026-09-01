@@ -66,6 +66,7 @@ const isLaunchGate = (msg: string) => /launch/i.test(msg)
 
 function BoostTab({ rivers, me, promptSignIn }: { rivers: River[]; me: any; promptSignIn: () => void }) {
   const [poolId, setPoolId] = useState(rivers[0]?.id ?? '')
+  useEffect(() => { if (!poolId && rivers[0]) setPoolId(rivers[0].id) }, [rivers, poolId])
   const [amount, setAmount] = useState('0.25')
   const [days, setDays] = useState('7')
   const [label, setLabel] = useState('')

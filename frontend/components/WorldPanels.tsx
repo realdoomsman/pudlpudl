@@ -111,6 +111,7 @@ export function WorldPanels({ rivers, nets, signedIn, onCast, onNetsChanged }: {
       {open.nets && (
         <Win title="My Nets" accent="#5ad1ff" initial={{ x: 678, y: 78 }} width={320} z={zOf('nets')} onFocus={() => focus('nets')} onClose={() => setOpen((o) => ({ ...o, nets: false }))}>
           <div className="p-2 space-y-1.5">
+            {signedIn && <BoostClaimBar onClaimed={onNetsChanged} />}
             {!signedIn ? <div className="text-xs text-white/45 p-3 text-center">Sign in to see your nets.</div>
               : nets.length === 0 ? <div className="text-xs text-white/45 p-3 text-center">No nets yet. Click a river in the world to cast one.</div>
               : nets.map((n) => <NetRow key={n.id} net={n} onChanged={onNetsChanged} />)}
@@ -133,6 +134,42 @@ export function WorldPanels({ rivers, nets, signedIn, onCast, onNetsChanged }: {
         ))}
       </div>
     </>
+  )
+}
+
+// Aggregate boost SOL the player has accrued from providing liquidity — escrowed
+// and claimable to their wallet. Hidden until there's something to claim.
+function BoostClaimBar({ onClaimed }: { onClaimed: () => void }) {
+  const [claimable, setClaimable] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<string | null>(null)
+  const load = () => pudl.boosts().then((r) => setClaimable(r.claimable || 0)).catch(() => {})
+  useEffect(() => { load(); const t = setInterval(load, 15_000); return () => clearInterval(t) }, [])
+  if (claimable <= 0 && !msg) return null
+  const claim = async () => {
+    setBusy(true); setMsg(null)
+    try {
+      const r = await pudl.claimBoost()
+      setMsg(r.claimedSol > 0 ? `Claimed ${fmtSol(r.claimedSol)}` : 'Nothing to claim yet')
+      load(); onClaimed()
+    } catch (e: any) {
+      setMsg(String(e?.message || 'failed'))
+    }
+    setBusy(false)
+  }
+  return (
+    <div className="flex items-center justify-between border border-acid/30 bg-acid/[0.06] px-2.5 py-2">
+      <div className="min-w-0">
+        <div className="eyebrow text-acid">Boost to claim</div>
+        <div className="mono text-[12px] tnum" style={{ color: '#e8ff1e' }}>{fmtSol(claimable)}</div>
+        {msg && <div className="text-[10px] text-white/50 mt-0.5 break-words">{msg}</div>}
+      </div>
+      {claimable > 0 && (
+        <button disabled={busy} onClick={claim} className="eyebrow px-2.5 py-1.5 text-acidink disabled:opacity-60" style={{ background: '#e8ff1e' }}>
+          {busy ? '…' : 'Claim'}
+        </button>
+      )}
+    </div>
   )
 }
 

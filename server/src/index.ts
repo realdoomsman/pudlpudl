@@ -31,6 +31,8 @@ import {
   boostRateForPool,
   claimableBoostSol,
   markBoostClaimedUpTo,
+  saveLedgerSync,
+  recreditBoostSol,
   leaderboard,
   newId,
   homes,
@@ -41,7 +43,7 @@ import {
   type Net,
   type Boost,
 } from './model'
-import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, splTokenBalances, createCpmmPool } from './cast'
+import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, transferSolResult, splTokenBalances, createCpmmPool, withAccountLock } from './cast'
 
 const PORT = Number(process.env.PORT || 8080)
 
@@ -138,7 +140,7 @@ function mapPool(p: any): River {
     price: Number(p.price) || 0,
     feeRatePct: (Number(p.feeRate) || 0) * 100,
     tvl, vol24h, fees24h, feesPer1k, boostPerDay, boostPer1k,
-    totalPer1k: feesPer1k + boostPer1k,
+    totalPer1k: feesPer1k, // rank on real fee yield (USD); boost is shown separately in SOL
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'raydium',
@@ -172,7 +174,7 @@ function mapMeteora(p: any): River {
     price: Number(p.current_price) || 0,
     feeRatePct: (Number(p.dynamic_fee_pct) || 0) * 100,
     tvl, vol24h, fees24h, feesPer1k, boostPerDay, boostPer1k,
-    totalPer1k: feesPer1k + boostPer1k,
+    totalPer1k: feesPer1k, // rank on real fee yield (USD); boost is shown separately in SOL
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'meteora',
@@ -297,8 +299,27 @@ const riverById = (id: string) => snapshot?.rivers.find((r) => r.id === id)
 // ---------------------------------------------------------------- app
 
 const app = express()
-app.use(cors())
+app.set('trust proxy', 1) // Railway sits behind a proxy — use the real client IP for rate limiting
+const FRONTEND_ORIGIN = (process.env.FRONTEND_ORIGIN || '').trim()
+app.use(cors(FRONTEND_ORIGIN ? { origin: FRONTEND_ORIGIN.split(',').map((o) => o.trim()) } : {}))
 app.use(express.json({ limit: '32kb' }))
+
+// tiny in-memory per-IP+path rate limiter (no dependency) — caps request-amplifier
+// and brute-force abuse. Money routes are behind Bearer auth in addition to this.
+const rlBuckets = new Map<string, { n: number; ts: number }>()
+function rateLimit(max: number, windowMs: number) {
+  return (req: any, res: any, next: any) => {
+    const key = (req.ip || req.socket?.remoteAddress || 'x') + '|' + req.path
+    const now = Date.now()
+    const b = rlBuckets.get(key)
+    if (!b || now - b.ts > windowMs) { rlBuckets.set(key, { n: 1, ts: now }); return next() }
+    if (b.n >= max) return res.status(429).json({ error: 'slow down' })
+    b.n++
+    next()
+  }
+}
+setInterval(() => { const now = Date.now(); for (const [k, b] of rlBuckets) if (now - b.ts > 120_000) rlBuckets.delete(k) }, 120_000).unref?.()
+app.use(rateLimit(150, 60_000)) // lenient global cap
 
 function auth(req: express.Request): Account | null {
   return sessionAccount(req.headers.authorization)
@@ -440,7 +461,7 @@ app.post('/withdraw', async (req, res) => {
   try { bal = await balanceOf(a.pubkey) } catch {}
   if (amt > bal - 0.001) return res.status(400).json({ error: 'amount exceeds balance — leave ~0.001 SOL for the network fee' })
   try {
-    const sig = await withdrawSol(accountKeypair(a), String(to), amt)
+    const sig = await withAccountLock(a.pubkey, () => withdrawSol(accountKeypair(a), String(to), amt))
     res.json({ ok: true, sig })
   } catch (e: any) {
     res.status(500).json({ error: String(e?.message ?? e).slice(0, 140) })
@@ -570,7 +591,7 @@ app.post('/nets/:id/harvest', async (req, res) => {
   const net = nets.find((n) => n.id === req.params.id && n.sub === a.sub)
   if (!net || !net.positionMint) return res.status(404).json({ error: 'net not found' })
   try {
-    const { txIds, solDelta } = await harvestNet(accountKeypair(a), net.poolId, net.positionMint)
+    const { txIds, solDelta } = await withAccountLock(a.pubkey, () => harvestNet(accountKeypair(a), net.poolId, net.positionMint!))
     // attribute the realized SOL to this net so earnings are a real number
     net.feesClaimedSol += solDelta
     saveNets()
@@ -601,7 +622,7 @@ app.post('/nets/:id/close', async (req, res) => {
   net.status = 'closing'
   saveNets()
   try {
-    await closeNet(accountKeypair(a), net.poolId, net.positionMint)
+    await withAccountLock(a.pubkey, () => closeNet(accountKeypair(a), net.poolId, net.positionMint!))
     net.status = 'closed'
     net.closedAt = Date.now()
     saveNets()
@@ -737,7 +758,7 @@ app.post('/boosts', async (req, res) => {
   try { bal = await balanceOf(a.pubkey) } catch {}
   if (amt > bal - 0.002) return res.status(400).json({ error: 'not enough SOL to fund this boost (keep ~0.002 for fees)' })
   try {
-    const sig = await transferSol(accountKeypair(a), escrowPubkey(), amt) // escrow the pot up front
+    const sig = await withAccountLock(a.pubkey, () => transferSol(accountKeypair(a), escrowPubkey(), amt)) // escrow the pot up front
     const now = Date.now()
     const boost: Boost = {
       id: newId('boost'), poolId: river.id, poolName: river.name,
@@ -746,26 +767,49 @@ app.post('/boosts', async (req, res) => {
       startAt: now, endAt: now + dur * 86_400_000, lastAccrualAt: now,
     }
     boosts.push(boost)
-    saveBoosts()
+    saveLedgerSync()
     res.json({ ok: true, boost, escrowSig: sig })
   } catch (e: any) {
     res.status(500).json({ error: String(e?.message ?? e).slice(0, 140) })
   }
 })
 
-// claim the boost SOL you've accrued from providing liquidity (escrow -> wallet)
+// claim the boost SOL you've accrued from providing liquidity (escrow -> wallet).
+// Debit-first + per-account lock + escrow-cap + durable write + reconcile so a
+// concurrent or half-failed claim can never double-pay or strand the ledger.
+const claimsInFlight = new Set<string>()
 app.post('/boosts/claim', async (req, res) => {
   const a = auth(req)
   if (!a) return res.status(401).json({ error: 'sign in' })
-  accrueBoosts() // settle the stream up to now first
-  const owed = claimableBoostSol(a.sub)
-  if (owed < 0.0001) return res.json({ ok: true, claimedSol: 0 })
+  if (!BOOSTS_ENABLED) return res.status(503).json({ error: 'boosts open at launch' })
+  if (claimsInFlight.has(a.sub)) return res.status(409).json({ error: 'a claim is already processing' })
+  claimsInFlight.add(a.sub)
   try {
-    const sig = await transferSol(escrowKeypair(), a.pubkey, owed)
-    const cleared = markBoostClaimedUpTo(a.sub, owed)
-    res.json({ ok: true, claimedSol: cleared, sig })
-  } catch (e: any) {
-    res.status(500).json({ error: String(e?.message ?? e).slice(0, 140) })
+    accrueBoosts() // settle the stream up to now first
+    const owed = claimableBoostSol(a.sub)
+    if (owed < 0.0001) return res.json({ ok: true, claimedSol: 0 })
+    // never ask escrow to pay more than it holds (keep a small gas reserve)
+    let escrowBal = 0
+    try { escrowBal = await balanceOf(escrowPubkey()) } catch {}
+    const payable = Math.min(owed, Math.max(0, escrowBal - 0.0002))
+    if (payable < 0.0001) return res.status(503).json({ error: 'boost escrow is settling — try again shortly' })
+    // DEBIT FIRST: clear the ledger and persist it synchronously BEFORE paying.
+    const cleared = markBoostClaimedUpTo(a.sub, payable)
+    saveLedgerSync()
+    let r: { sig: string; landed: boolean }
+    try {
+      r = await withAccountLock(a.pubkey, () => transferSolResult(escrowKeypair(), a.pubkey, cleared))
+    } catch (e: any) {
+      // the send itself failed — nothing left escrow, so give the credit back
+      recreditBoostSol(a.sub, cleared); saveLedgerSync()
+      return res.status(500).json({ error: 'payout failed — your boost is safe, try again: ' + String(e?.message ?? e).slice(0, 100) })
+    }
+    if (r.landed) return res.json({ ok: true, claimedSol: cleared, sig: r.sig })
+    // provably did not land → re-credit (transferSolResult biases to landed on unknown)
+    recreditBoostSol(a.sub, cleared); saveLedgerSync()
+    return res.status(502).json({ error: 'payout did not confirm — your boost is safe, try again', sig: r.sig })
+  } finally {
+    claimsInFlight.delete(a.sub)
   }
 })
 
@@ -830,6 +874,7 @@ pollRivers()
 setInterval(pollRivers, 30_000)
 // settle boost streams onto live LPs once a minute so accrual stays current
 setInterval(() => {
+  if (!BOOSTS_ENABLED) return
   try { accrueBoosts() } catch (e: any) { console.error('[boosts] accrue failed:', String(e?.message ?? e).slice(0, 120)) }
 }, 60_000).unref?.()
 app.listen(PORT, () => console.log(`[pudl] backend on :${PORT}`))
