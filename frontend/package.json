@@ -8,25 +8,18 @@
     "start": "next start"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.29.0",
-    "@solana/spl-token": "^0.3.9",
-    "@solana/wallet-adapter-base": "^0.9.23",
-    "@solana/wallet-adapter-react": "^0.15.35",
-    "@solana/wallet-adapter-react-ui": "^0.9.35",
-    "@solana/wallet-adapter-wallets": "^0.19.32",
-    "@solana/web3.js": "^1.87.6",
-    "@supabase/supabase-js": "^2.81.1",
-    "framer-motion": "^12.23.24",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "next": "14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "recharts": "^3.4.1",
-    "vercel": "^48.9.0"
+    "three": "^0.170.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/three": "^0.170.0",
     "autoprefixer": "^10.0.1",
     "pino-pretty": "^10.0.0",
     "postcss": "^8",

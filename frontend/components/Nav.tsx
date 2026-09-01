@@ -2,25 +2,22 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { AccountBar } from '@/components/AccountBar'
 
 export function Nav() {
   const pathname = usePathname()
-
-  const isActive = (path: string) => pathname === path
+  const active = (p: string) => pathname === p
 
   return (
-    <nav className="border-b border-white/5 backdrop-blur-xl bg-pudl-dark/80 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold tracking-tight text-white">
-          PUDL
+    <nav className="border-b border-dash bg-black/90 backdrop-blur-md sticky top-0 z-30">
+      <div className="max-w-[1760px] mx-auto pl-3.5 pr-3 md:pl-5 md:pr-4 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="display text-[13px] leading-none bg-acid text-acidink px-2 pt-[5px] pb-1">PUDL</span>
         </Link>
-        <div className="flex items-center gap-8">
-          <NavLink href="/pools" active={isActive('/pools')}>Pools</NavLink>
-          <NavLink href="/swap" active={isActive('/swap')}>Swap</NavLink>
-          <NavLink href="/stake" active={isActive('/stake')}>Stake</NavLink>
-          <NavLink href="/create" active={isActive('/create')}>Create</NavLink>
-          <WalletMultiButton />
+        <div className="flex items-center gap-2.5 md:gap-3">
+          <NavLink href="/rivers" active={active('/rivers')}>Rivers</NavLink>
+          <NavLink href="/board" active={active('/board')}>Board</NavLink>
+          <AccountBar />
         </div>
       </div>
     </nav>
@@ -29,12 +26,12 @@ export function Nav() {
 
 function NavLink({ href, children, active }: { href: string; children: React.ReactNode; active: boolean }) {
   return (
-    <Link 
-      href={href} 
-      className={`text-sm transition-colors ${
-        active 
-          ? 'text-white' 
-          : 'text-gray-400 hover:text-white'
+    <Link
+      href={href}
+      className={`eyebrow border px-2.5 py-[7px] transition-colors ${
+        active
+          ? 'text-acid border-acid/35 bg-acid/[0.09]'
+          : 'text-white/55 border-hair bg-surface hover:text-acid hover:border-acid/35'
       }`}
     >
       {children}

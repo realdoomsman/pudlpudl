@@ -44,3 +44,10 @@ coverage/
 *.tsbuildinfo
 .cache/
 .vercel
+
+# Custodial wallet data & encryption keys — NEVER commit
+server/data/
+data/
+.pudl-dev-master.key
+master.key
+*.key
