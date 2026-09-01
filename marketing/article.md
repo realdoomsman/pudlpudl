@@ -2,6 +2,8 @@
 
 *The whole game of memecoins is built to take your money. PUDL is how you sit on the other side of the table — in one click.*
 
+**Don't trust — verify.** The code is open, every net is a real position on Raydium, and every number you see is pulled straight from the chain. Links to check it all yourself are at the bottom.
+
 ---
 
 Every memecoin needs two kinds of people. The ones who ape in at the top chasing a green candle. And the house that quietly collects on every single trade they make, up or down.
@@ -24,7 +26,7 @@ To earn, you **cast a net** into a river. That's you providing liquidity to that
 
 From that moment, every trade that flows past your net pays you a real fee — on the way up *and* the way down. A memecoin pumping? Fees. Dumping? Fees. Chopping sideways for six hours while everyone panics? Fees. You're not predicting the chart. You're taxing the traffic.
 
-Your take shows up live, in SOL, in your own wallet. Every number in PUDL is a real on-chain figure — never an invented APR.
+Your take shows up live, in SOL, in your own wallet. Every number in PUDL is a real on-chain figure — never an invented APR. And every net you cast is a genuine liquidity position on Raydium: pull up your wallet on Solscan and you'll see the position, and the fees it earned. Nothing to take on faith.
 
 ## Mix the rivers
 
@@ -59,6 +61,19 @@ Providing liquidity is not free money, and anyone who tells you it is, is sellin
 If a coin dumps out of your range, your net stops catching fees and you're left holding the weaker side of the pair — the coin that just crashed. That's **impermanent loss**, and it's the real cost of being the house. Wider nets survive bigger moves and earn less; tighter nets earn more and get shredded faster. You choose.
 
 We'd rather you understand the river before you fish it.
+
+## Verify it yourself
+
+Don't take our word for any of it. Check it:
+
+- **The app:** https://pudl.fun
+- **Open source — read the actual code:** https://github.com/realdoomsman/pudlpudl
+- **Built on Raydium** (this is where the real fees come from): https://raydium.io
+- **Solscan** (verify your own positions and fees, and every wallet below): https://solscan.io
+- **Boost escrow wallet** — the on-chain address that holds and streams boosts to LPs, transparent from day one: https://solscan.io/account/5yFLvHsnBff9qN7cfvWXSc8Da98HQJgGMmR4gAzkJ6K
+- **$PUDL token contract:** not launched yet. The **official** contract address will be posted here and pinned on our profile the moment it goes live. **Anything claiming to be $PUDL before then is a scam — do not buy it.**
+
+That last point matters. When we launch, the only real CA is the one signed and pinned from our verified account. Screenshot this. Trust nothing else.
 
 ## Be the house
 
