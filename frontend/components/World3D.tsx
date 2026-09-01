@@ -17,9 +17,9 @@ import { fmtUsd } from '@/lib/rivers'
 
 // -------- palette (desaturated monograph washes + one acid accent) --------
 const C = {
-  DEEP: '#1c3140', SHALLOW: '#3f6377', MEADOW: '#5f6f4d', PLAIN: '#7a7150',
-  STRAND: '#a89e84', UPLAND: '#6d7076', BONE: '#e8e2d4', INK: '#0d1116',
-  INK2: '#39424c', SUN: '#fff4e2', SKY: '#bdd3ea', ACID: '#e8ff1e', ROOF: '#5b5347',
+  DEEP: '#0f3446', SHALLOW: '#3f92a8', FOAM: '#d3e7ea', MEADOW: '#61803f', PLAIN: '#8a7f4f',
+  STRAND: '#c9bd9a', UPLAND: '#707561', BONE: '#e9e4d6', INK: '#0b1620',
+  INK2: '#39424c', SUN: '#fff3df', SKY: '#c3d9ea', ACID: '#e8ff1e', ROOF: '#7a4a3a',
 }
 const col = (h: string) => new THREE.Color(h)
 
@@ -155,7 +155,7 @@ function windingCurve(src: THREE.Vector3, dst: THREE.Vector3, wind: number): THR
   for (let s = 0; s <= steps; s++) {
     const t = s / steps
     const x = src.x + (dst.x - src.x) * t
-    const z = src.z + (dst.z - src.z) * t + Math.sin(t * Math.PI * 2 + wind * 3) * (1 - t * 0.6) * 12 * wind
+    const z = src.z + (dst.z - src.z) * t + Math.sin(t * Math.PI * 2 + wind * 3) * (1 - t * 0.6) * 8 * wind
     pts.push(new THREE.Vector3(x, 0, z))
   }
   return new THREE.CatmullRomCurve3(pts)
@@ -170,34 +170,37 @@ function useNetwork(rivers: River[], ownedIds: Set<string>, height: ReturnType<t
     let seed = 1337
     const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff }
 
-    // each river: a source scattered across the uplands (+X) + a winding path
-    const items = top.map((river) => ({
-      river,
-      src: new THREE.Vector3(W * 0.02 + rnd() * W * 0.44, 0, (rnd() - 0.5) * W * 0.9),
-      wind: (rnd() - 0.5) * 2,
-      curve: null as THREE.CatmullRomCurve3 | null,
-    }))
-    // biggest rivers are TRUNKS that reach the sea; the rest are TRIBUTARIES that
-    // join a trunk — a confluence is exactly where you'd mix two pools' liquidity.
-    const byVol = [...items].sort((a, b) => b.river.vol24h - a.river.vol24h)
-    const T = Math.max(5, Math.round(items.length * 0.45))
-    const trunks = byVol.slice(0, T)
-    trunks.forEach((it, k) => {
-      const mouthZ = (k / Math.max(T - 1, 1) - 0.5) * W * 0.82
-      it.curve = windingCurve(it.src, new THREE.Vector3(-W * 0.48, 0, mouthZ + (rnd() - 0.5) * 8), it.wind)
+    // biggest rivers are TRUNKS (source in the uplands, mouth at the sea, spread
+    // apart); the rest are TRIBUTARIES placed just upstream and beside a trunk so
+    // they flow in cleanly at a confluence — no rivers cross each other.
+    const byVol = [...top].sort((a, b) => b.vol24h - a.vol24h)
+    const T = Math.min(Math.max(4, Math.round(top.length * 0.5)), 8)
+    const upV = new THREE.Vector3(0, 1, 0)
+    const trunks = byVol.slice(0, T).map((river, k) => {
+      const mouthZ = (k / Math.max(T - 1, 1) - 0.5) * W * 0.8
+      const src = new THREE.Vector3(W * 0.34 + rnd() * W * 0.12, 0, mouthZ * 0.7 + (rnd() - 0.5) * W * 0.14)
+      const curve = windingCurve(src, new THREE.Vector3(-W * 0.48, 0, mouthZ), (rnd() - 0.5) * 1.1)
+      return { river, curve }
     })
+    const items: { river: River; curve: THREE.CatmullRomCurve3 }[] = trunks.map((t) => ({ river: t.river, curve: t.curve }))
     const confluences: THREE.Vector3[] = []
-    byVol.slice(T).forEach((it) => {
-      let best = trunks[0], bd = Infinity
-      for (const tr of trunks) { const d = it.src.distanceToSquared(tr.src); if (d < bd) { bd = d; best = tr } }
-      const j = best.curve!.getPoint(0.45 + rnd() * 0.3)
-      it.curve = windingCurve(it.src, j, it.wind)
+    byVol.slice(T).forEach((river, i) => {
+      const tr = trunks[i % trunks.length]
+      const jt = 0.35 + rnd() * 0.4
+      const j = tr.curve.getPoint(jt)
+      const jtan = tr.curve.getTangent(jt).setY(0).normalize()
+      const jn = new THREE.Vector3().crossVectors(upV, jtan).normalize()
+      const side = rnd() < 0.5 ? 1 : -1
+      const back = 16 + rnd() * 22 // upstream of the junction
+      const out = 12 + rnd() * 16 // off to one side
+      const src = new THREE.Vector3(j.x - jtan.x * back + jn.x * side * out, 0, j.z - jtan.z * back + jn.z * side * out)
+      items.push({ river, curve: windingCurve(src, j, (rnd() - 0.5) * 0.7) })
       confluences.push(new THREE.Vector3(j.x, height.heightAt(j.x, j.z), j.z))
     })
 
     const reaches: Reach[] = items.map((it) => {
       const river = it.river
-      const curve = it.curve!
+      const curve = it.curve
       // ribbon
       const width = 1.1 + Math.sqrt(river.vol24h / maxVol) * 6.5
       const div = 60
@@ -260,23 +263,32 @@ function waterMaterial() {
       uHi: { value: 0 },
       uDeep: { value: col(C.DEEP) },
       uShallow: { value: col(C.SHALLOW) },
+      uFoam: { value: col(C.FOAM) },
       uInk: { value: col(C.INK) },
       uAcid: { value: col(C.ACID) },
     },
     vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
     fragmentShader: `
-      varying vec2 vUv; uniform float uTime,uFlow,uHi; uniform vec3 uDeep,uShallow,uInk,uAcid;
+      varying vec2 vUv; uniform float uTime,uFlow,uHi; uniform vec3 uDeep,uShallow,uFoam,uInk,uAcid;
       void main(){
-        float edge=abs(vUv.x);
-        vec3 c=mix(uDeep,uShallow,pow(edge,0.7));
-        float bank=smoothstep(0.90,0.90+fwidth(edge)*2.0,edge);
-        c=mix(c,uInk,bank*0.85);
-        float streak=sin(vUv.y*7.0-uTime*uFlow*6.0);
-        float streak2=sin(vUv.y*2.3-uTime*uFlow*3.0);
-        c+=streak*0.03*(1.0-edge);
-        c+=max(streak2,0.0)*0.05*(1.0-abs(vUv.x));
-        c=mix(c,uAcid,uHi*(0.5+0.3*max(streak,0.0)));
-        gl_FragColor=vec4(c,0.95);
+        float e=abs(vUv.x);
+        float flow=uTime*uFlow;
+        // depth — deep teal centre to a bright shallow at the banks
+        vec3 c=mix(uDeep,uShallow,pow(e,0.55));
+        // flowing ripples, advected downstream
+        float w1=sin(vUv.y*9.0 - flow*7.0 + vUv.x*4.0);
+        float w2=sin(vUv.y*4.0 - flow*4.0 - vUv.x*2.5);
+        c += (w1*0.5 + w2*0.5) * 0.05 * (1.0-e);
+        // sun sparkle — moving glints across the surface
+        float sp=pow(max(sin(vUv.y*46.0 - flow*22.0)*sin(vUv.x*24.0 + flow*6.0),0.0),10.0);
+        c += sp * 0.35 * (1.0-e*0.6);
+        // wavering foam along the banks
+        float fw=0.5+0.5*sin(vUv.y*22.0 - flow*11.0);
+        c=mix(c,uFoam, smoothstep(0.80,0.97,e)*(0.45+0.4*fw));
+        // thin ink coastline
+        c=mix(c,uInk, smoothstep(0.965,1.0,e)*0.7);
+        c=mix(c,uAcid, uHi*(0.5+0.3*max(w1,0.0)));
+        gl_FragColor=vec4(c,0.96);
       }`,
   })
 }

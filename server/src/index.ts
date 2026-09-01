@@ -289,9 +289,18 @@ app.get('/health', (_req, res) =>
 app.get('/rivers', (req, res) => {
   if (!snapshot) return res.status(503).json({ error: 'warming up' })
   const memeOnly = req.query.all !== '1'
-  const rivers = memeOnly ? snapshot.rivers.filter((r) => r.meme) : snapshot.rivers
+  // the map shows only CASTABLE (Raydium) pools — no dead-end "indexed, not
+  // castable" rivers. Meteora / pump.fun pools stay reachable via CA search.
+  let rivers = snapshot.rivers.filter((r) => r.venue === 'raydium')
+  if (memeOnly) rivers = rivers.filter((r) => r.meme)
+  rivers = rivers.slice(0, 60)
   res.setHeader('Cache-Control', 'public, max-age=15')
-  res.json({ ...snapshot, rivers: rivers.slice(0, 60) })
+  res.json({
+    ...snapshot,
+    rivers,
+    totalFees24h: rivers.reduce((s, r) => s + r.fees24h, 0),
+    totalVol24h: rivers.reduce((s, r) => s + r.vol24h, 0),
+  })
 })
 
 app.get('/rivers/history/:poolId', (req, res) => {
