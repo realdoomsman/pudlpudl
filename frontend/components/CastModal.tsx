@@ -45,14 +45,14 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
       <div className="relative w-full md:max-w-md rounded-t-3xl md:rounded-3xl border border-white/10 bg-deep p-6 animate-rise">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <div className="text-[11px] uppercase tracking-widest text-gray-500">Cast a net</div>
+            <div className="text-[11px] uppercase tracking-widest text-white/40">Cast a net</div>
             <div className="font-display text-2xl font-bold">{river.name}</div>
           </div>
           <span
-            className={`text-[10px] font-semibold tracking-wider rounded-full px-2.5 py-1 border ${
+            className={`text-[10px] font-semibold tracking-wider px-2.5 py-1 border ${
               river.flow === 'FLASH FLOOD'
                 ? 'text-flood border-flood/40 animate-shimmer'
-                : 'text-gray-400 border-white/10'
+                : 'text-white/55 border-white/10'
             }`}
           >
             {river.flow}
@@ -63,7 +63,7 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
           <div className="text-center py-8">
             <div className="text-5xl mb-3">🎣</div>
             <div className="font-display text-xl font-bold mb-1">Net cast.</div>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-sm text-white/55 mb-6">
               Your position is opening on-chain. It&rsquo;ll show up in{' '}
               <span className="text-white">My Nets</span> in a few seconds and start collecting.
             </p>
@@ -79,7 +79,7 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
           <div className="py-6 text-center">
             <div className="text-4xl mb-3">🗺️</div>
             <div className="font-display text-lg mb-1 uppercase tracking-tight">Indexed, not castable yet.</div>
-            <p className="text-sm text-gray-400 mb-5 leading-relaxed">
+            <p className="text-sm text-white/55 mb-5 leading-relaxed">
               <span className="uppercase text-acid">{river.venue}</span> pools are on the map and searchable, but
               casting there is coming. For now, cast into <span className="text-white">Raydium</span> rivers.
             </p>
@@ -90,8 +90,8 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
         ) : (
           <>
             <div className="mb-4">
-              <label className="text-xs text-gray-500">Amount (SOL)</label>
-              <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-white/10 bg-abyss/60 px-4 py-3">
+              <label className="text-xs text-white/40">Amount (SOL)</label>
+              <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-4 py-3">
                 <input
                   type="number"
                   value={amount}
@@ -102,42 +102,42 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
                 {me && (
                   <button
                     onClick={() => setAmount(Math.max(me.sol - 0.02, 0).toFixed(3))}
-                    className="text-xs text-flood font-semibold"
+                    className="text-xs text-acid font-semibold"
                   >
                     MAX
                   </button>
                 )}
               </div>
-              {me && <div className="text-[11px] text-gray-600 mt-1">Balance {me.sol.toFixed(3)} SOL</div>}
+              {me && <div className="text-[11px] text-white/30 mt-1">Balance {me.sol.toFixed(3)} SOL</div>}
             </div>
 
             <div className="mb-5">
-              <label className="text-xs text-gray-500">How tight?</label>
+              <label className="text-xs text-white/40">How tight?</label>
               <div className="mt-1.5 grid grid-cols-3 gap-2">
                 {BANDS.map((b, i) => (
                   <button
                     key={b.label}
                     onClick={() => setBand(i)}
                     className={`rounded-xl border px-2 py-2.5 text-center transition-colors ${
-                      band === i ? 'border-flood bg-flood/10' : 'border-white/10 hover:border-white/20'
+                      band === i ? 'border-acid bg-acid/10' : 'border-white/10 hover:border-white/20'
                     }`}
                   >
                     <div className="text-xs font-semibold">{b.label}</div>
-                    <div className="text-[10px] text-gray-500">±{Math.round(b.pct * 100)}%</div>
+                    <div className="text-[10px] text-white/40">±{Math.round(b.pct * 100)}%</div>
                   </button>
                 ))}
               </div>
-              <div className="text-[11px] text-gray-600 mt-1.5">{BANDS[band].note}</div>
+              <div className="text-[11px] text-white/30 mt-1.5">{BANDS[band].note}</div>
             </div>
 
-            <div className="rounded-xl bg-abyss/60 border border-white/5 p-3 mb-4 text-sm">
+            <div className="rounded-xl bg-black/40 border border-white/5 p-3 mb-4 text-sm">
               <div className="flex justify-between items-baseline">
-                <span className="text-[11px] uppercase tracking-widest text-gray-500">
+                <span className="text-[11px] uppercase tracking-widest text-white/40">
                   this pool paid, last 24h
                 </span>
                 <span className="font-mono font-bold" style={{ color: '#e8ff1e' }}>
                   {fmtUsd(river.feesPer1k)}
-                  <span className="text-gray-600 font-sans font-normal text-xs"> / $1k of pool · 24h</span>
+                  <span className="text-white/30 font-sans font-normal text-xs"> / $1k of pool · 24h</span>
                 </span>
               </div>
               {river.boostPer1k > 0 && (
@@ -147,13 +147,13 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
                   </span>
                   <span className="font-mono font-bold text-gold">
                     {fmtUsd(river.boostPer1k)}
-                    <span className="text-gray-600 font-sans font-normal text-xs"> / $1k&#183;day</span>
+                    <span className="text-white/30 font-sans font-normal text-xs"> / $1k&#183;day</span>
                   </span>
                 </div>
               )}
-              <p className="text-[10px] text-gray-600 mt-2.5 leading-relaxed">
+              <p className="text-[10px] text-white/30 mt-2.5 leading-relaxed">
                 A real backward-looking rate, not a promise. You earn fees only while price stays in
-                your net&rsquo;s range. Your actual take shows up live in <span className="text-gray-400">My Nets</span>.
+                your net&rsquo;s range. Your actual take shows up live in <span className="text-white/55">My Nets</span>.
               </p>
             </div>
 

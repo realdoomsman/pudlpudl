@@ -30,7 +30,7 @@ export function AccountBar() {
   }
 
   if (loading) {
-    return <div className="w-24 h-9 rounded-full bg-white/5 animate-pulse" />
+    return <div className="w-24 h-9 bg-white/5 animate-pulse" />
   }
 
   if (!me) {
@@ -79,16 +79,16 @@ export function AccountBar() {
               )}
               <div className="min-w-0">
                 <div className="font-semibold truncate">{me.name}</div>
-                <div className="text-xs text-gray-500 truncate">{me.email}</div>
+                <div className="text-xs text-white/40 truncate">{me.email}</div>
               </div>
             </div>
 
-            <div className="rounded-xl bg-abyss/60 border border-white/5 p-3 mb-3">
-              <div className="text-[11px] uppercase tracking-widest text-gray-500 mb-1">
+            <div className="rounded-xl bg-black/40 border border-white/5 p-3 mb-3">
+              <div className="text-[11px] uppercase tracking-widest text-white/40 mb-1">
                 Your balance
               </div>
               <div className="text-2xl font-bold font-mono" style={{ color: '#e8ff1e' }}>
-                {me.sol.toFixed(4)} <span className="text-sm text-gray-500">SOL</span>
+                {me.sol.toFixed(4)} <span className="text-sm text-white/40">SOL</span>
               </div>
             </div>
 
@@ -101,11 +101,11 @@ export function AccountBar() {
             </button>
 
             {showDeposit && (
-              <div className="rounded-xl bg-abyss/60 border border-white/5 p-3 mb-2">
-                <div className="text-[11px] uppercase tracking-widest text-gray-500 mb-2">
+              <div className="rounded-xl bg-black/40 border border-white/5 p-3 mb-2">
+                <div className="text-[11px] uppercase tracking-widest text-white/40 mb-2">
                   Send SOL to your PUDL address
                 </div>
-                <div className="font-mono text-xs break-all text-gray-300 mb-2">
+                <div className="font-mono text-xs break-all text-white/70 mb-2">
                   {me.depositAddress}
                 </div>
                 <button
@@ -118,7 +118,7 @@ export function AccountBar() {
                 >
                   {copied ? 'Copied ✓' : 'Copy address'}
                 </button>
-                <p className="text-[11px] text-gray-600 mt-2 leading-relaxed">
+                <p className="text-[11px] text-white/30 mt-2 leading-relaxed">
                   Solana only. Your balance updates a few seconds after it lands.
                 </p>
               </div>
@@ -132,8 +132,8 @@ export function AccountBar() {
             </button>
 
             {showWithdraw && (
-              <div className="bg-abyss/60 border border-white/5 p-3 mb-2 space-y-2">
-                <div className="text-[11px] uppercase tracking-widest text-gray-500">Send to a Solana address</div>
+              <div className="bg-black/40 border border-white/5 p-3 mb-2 space-y-2">
+                <div className="text-[11px] uppercase tracking-widest text-white/40">Send to a Solana address</div>
                 <input
                   value={wto}
                   onChange={(e) => setWto(e.target.value)}
@@ -167,7 +167,7 @@ export function AccountBar() {
                 {wmsg && (
                   <div className="text-[11px] break-all" style={{ color: wmsg.ok ? '#e8ff1e' : '#ff5a7a' }}>{wmsg.text}</div>
                 )}
-                <p className="text-[10px] text-gray-600 leading-relaxed">
+                <p className="text-[10px] text-white/30 leading-relaxed">
                   Sends SOL from your PUDL wallet on Solana. Double-check the address — transfers can&rsquo;t be undone.
                 </p>
               </div>
@@ -178,7 +178,7 @@ export function AccountBar() {
                 signOut()
                 setOpen(false)
               }}
-              className="w-full text-sm text-gray-500 hover:text-white py-2 transition-colors"
+              className="w-full text-sm text-white/40 hover:text-white py-2 transition-colors"
             >
               Sign out
             </button>
