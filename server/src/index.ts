@@ -35,7 +35,7 @@ import {
   homeStats,
   type Net,
 } from './model'
-import { openNet, harvestNet, closeNet, balanceOf } from './cast'
+import { openNet, harvestNet, closeNet, balanceOf, withdrawSol } from './cast'
 
 const PORT = Number(process.env.PORT || 8080)
 
@@ -330,6 +330,25 @@ app.get('/me', async (req, res) => {
     sol = await balanceOf(a.pubkey)
   } catch {}
   res.json({ ...publicAccount(a), sol, depositAddress: a.pubkey })
+})
+
+// withdraw SOL out of the custodial wallet to any address — funds are always yours
+app.post('/withdraw', async (req, res) => {
+  const a = auth(req)
+  if (!a) return res.status(401).json({ error: 'sign in' })
+  const { to, amount } = req.body ?? {}
+  if (!isBase58Mint(String(to))) return res.status(400).json({ error: 'enter a valid Solana address' })
+  const amt = Number(amount)
+  if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: 'bad amount' })
+  let bal = 0
+  try { bal = await balanceOf(a.pubkey) } catch {}
+  if (amt > bal - 0.001) return res.status(400).json({ error: 'amount exceeds balance — leave ~0.001 SOL for the network fee' })
+  try {
+    const sig = await withdrawSol(accountKeypair(a), String(to), amt)
+    res.json({ ok: true, sig })
+  } catch (e: any) {
+    res.status(500).json({ error: String(e?.message ?? e).slice(0, 140) })
+  }
 })
 
 // -------- nets: cast / harvest / close --------

@@ -118,6 +118,8 @@ export const pudl = {
     }),
   me: () => api<Me>('/me'),
   logout: () => api<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
+  withdraw: (to: string, amount: number) =>
+    api<{ ok: boolean; sig: string }>('/withdraw', { method: 'POST', body: JSON.stringify({ to, amount }) }),
   myNets: () => api<{ nets: MyNet[] }>('/nets/mine'),
   cast: (poolId: string, amount: number, bandPct = 0.15) =>
     api<{ ok: boolean; net: MyNet }>('/nets/cast', {

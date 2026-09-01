@@ -13,7 +13,7 @@
 // Live execution needs a funded account + a real RPC (RPC_URL env). Opens are
 // atomic: if anything fails the transaction reverts and no SOL is lost.
 
-import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import { Connection, Keypair, PublicKey, SystemProgram, Transaction } from '@solana/web3.js'
 import {
   Raydium,
   TxVersion,
@@ -233,4 +233,17 @@ export async function closeNet(owner: Keypair, poolId: string, positionMint: str
 
 export function balanceOf(pubkey: string): Promise<number> {
   return connection.getBalance(new PublicKey(pubkey)).then((l) => l / 1e9)
+}
+
+/** Withdraw SOL from the custodial wallet to any address the player owns. */
+export async function withdrawSol(owner: Keypair, to: string, sol: number): Promise<string> {
+  const dest = new PublicKey(to) // throws on a bad address
+  const lamports = Math.floor(sol * 1e9)
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
+  const tx = new Transaction({ feePayer: owner.publicKey, blockhash, lastValidBlockHeight }).add(
+    SystemProgram.transfer({ fromPubkey: owner.publicKey, toPubkey: dest, lamports }),
+  )
+  const sig = await connection.sendTransaction(tx, [owner])
+  await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed')
+  return sig
 }
