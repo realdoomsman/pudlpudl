@@ -1,0 +1,219 @@
+<title>PUDL — Be the House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#000000; --panel:#0a0a0a; --panel2:#0e0e0e; --line:#1c1c1c;
+    --dash:rgba(255,255,255,.13); --ink:#ffffff; --muted:rgba(255,255,255,.60);
+    --faint:rgba(255,255,255,.36); --acid:#e8ff1e; --acid-ink:#0a0a00;
+    --teal:#3f92a8; --deep:#0f3446; --danger:#ff6a86;
+    --sans:'Inter',system-ui,-apple-system,sans-serif;
+    --mono:'Space Mono',ui-monospace,monospace;
+    --disp:'Archivo Black','Inter',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:var(--acid);text-decoration:none}
+  a:focus-visible{outline:2px solid var(--acid);outline-offset:2px}
+  .wrap{max-width:1080px;margin:0 auto;border-left:1px dashed var(--dash);border-right:1px dashed var(--dash)}
+  .col{max-width:760px;margin:0 auto;padding:0 24px}
+  .disp{font-family:var(--disp);text-transform:uppercase;letter-spacing:-.01em;line-height:1.02;text-wrap:balance}
+  .eyebrow{font-family:var(--mono);text-transform:uppercase;font-size:11px;letter-spacing:.22em;color:var(--faint)}
+  .acid{color:var(--acid)} .b{color:var(--ink);font-weight:600}
+
+  /* hero */
+  .hero{position:relative;border-bottom:1px dashed var(--dash);overflow:hidden}
+  #riv{position:absolute;inset:0;width:100%;height:100%;opacity:.5;z-index:0}
+  .hero-in{position:relative;z-index:1;padding:64px 0 52px}
+  .hero h1{font-size:clamp(44px,9vw,88px);margin:18px 0 0}
+  .hero .dot{color:var(--acid)}
+  .lede{font-size:clamp(17px,2.4vw,21px);color:var(--muted);margin:22px 0 0;max-width:34ch;font-style:italic}
+  .verify-line{margin:22px 0 0;font-size:14px;color:var(--muted);border-left:2px solid var(--acid);padding:4px 0 4px 14px}
+  .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+  .btn{font-family:var(--mono);text-transform:uppercase;font-size:12px;letter-spacing:.12em;
+    padding:13px 20px;border:1px solid var(--line);color:var(--muted);background:var(--panel);transition:.15s}
+  .btn:hover{border-color:rgba(232,255,30,.4);color:var(--acid)}
+  .btn.pri{background:var(--acid);color:var(--acid-ink);border-color:var(--acid);font-weight:700}
+  .btn.pri:hover{filter:brightness(1.06);color:var(--acid-ink)}
+
+  section{padding:52px 0;border-bottom:1px dashed var(--dash)}
+  section h2{font-size:clamp(26px,4.4vw,38px);margin:14px 0 18px}
+  section p{margin:0 0 18px;font-size:16.5px;color:var(--muted)}
+  section p:last-child{margin-bottom:0}
+  .kick{margin-bottom:6px}
+
+  /* flywheel */
+  .flyfig{margin:26px auto 6px;max-width:440px}
+  .flyfig svg{width:100%;height:auto;display:block}
+  .fly-cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);text-align:center;margin-top:10px}
+
+  /* risk */
+  .risk{border:1px solid rgba(255,106,134,.32);background:rgba(255,106,134,.05);padding:22px}
+  .risk .eyebrow{color:var(--danger)}
+  .risk p{color:rgba(255,255,255,.72)}
+
+  /* proof panel */
+  .proof{background:var(--panel2)}
+  .rows{border-top:1px solid var(--line);margin-top:22px}
+  .row{display:flex;align-items:baseline;gap:16px;padding:15px 2px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .row .lab{font-family:var(--mono);text-transform:uppercase;font-size:11px;letter-spacing:.14em;color:var(--faint);min-width:150px;flex:0 0 auto}
+  .row .val{flex:1 1 240px;min-width:0}
+  .row .val .desc{color:var(--muted);font-size:14.5px}
+  .row a.link{font-family:var(--mono);font-size:13px;word-break:break-all;border-bottom:1px solid rgba(232,255,30,.35)}
+  .row.warn{background:rgba(232,255,30,.04);border-left:2px solid var(--acid);padding-left:14px}
+  .row.warn .val{color:var(--muted);font-size:14.5px}
+  .row.warn .no{color:var(--danger);font-weight:700}
+
+  footer{padding:46px 0 60px;text-align:center}
+  .mark{display:inline-block;font-family:var(--disp);text-transform:uppercase;background:var(--acid);color:var(--acid-ink);padding:6px 12px 4px;font-size:16px;letter-spacing:.02em}
+  footer .tag{font-family:var(--disp);text-transform:uppercase;font-size:clamp(20px,4vw,30px);margin:22px 0 8px}
+  footer .tick{font-family:var(--mono);color:var(--acid);letter-spacing:.2em}
+  .disclaim{font-size:12px;color:var(--faint);margin-top:26px;max-width:60ch;margin-left:auto;margin-right:auto;line-height:1.7}
+  @media (max-width:640px){ .row .lab{min-width:100%} .col{padding:0 18px} }
+  @media (prefers-reduced-motion:reduce){ #riv{opacity:.28} }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <canvas id="riv" aria-hidden="true"></canvas>
+    <div class="hero-in col">
+      <div class="eyebrow">Solana · liquidity game</div>
+      <h1 class="disp">Stop being<br>exit liquidity.<br><span class="dot acid">Be the house.</span></h1>
+      <p class="lede">The whole game of memecoins is built to take your money. PUDL is how you sit on the other side of the table — in one click.</p>
+      <p class="verify-line"><span class="b">Don't trust — verify.</span> The code is open, every net is a real position on Raydium, and every number is pulled straight from the chain.</p>
+      <div class="cta">
+        <a class="btn pri" href="https://pudl.fun" target="_blank" rel="noopener">Enter the app →</a>
+        <a class="btn" href="https://github.com/realdoomsman/pudlpudl" target="_blank" rel="noopener">Read the code</a>
+      </div>
+    </div>
+  </header>
+
+  <section><div class="col">
+    <p>Every memecoin needs two kinds of people. The ones who ape in at the top chasing a green candle. And the house that quietly collects on every single trade they make, up or down.</p>
+    <p>You already know which one you've been.</p>
+    <p><span class="b">PUDL flips it.</span> Instead of betting on the coin, you become the liquidity behind it — and you collect the real trading fees the pool generates. Not a promise, not a yield farm emitting a token nobody wants. The actual fees traders pay, every time they buy or sell, landing in your wallet.</p>
+  </div></section>
+
+  <section><div class="col">
+    <div class="eyebrow kick">The world</div>
+    <h2 class="disp">The market, from above.</h2>
+    <p>Open PUDL and you're looking down on a world of <span class="b">rivers</span>. Every river is a live memecoin pool. The wider it runs, the more volume is flowing through it. The <span class="b">homes</span> on the banks are other players. This is where you fish.</p>
+    <p>It's not a metaphor bolted on for looks — it's the actual market, drawn the way it behaves. Money flows downstream. The busiest rivers pay the most. You see the whole thing at a glance instead of squinting at a DEX table.</p>
+  </div></section>
+
+  <section><div class="col">
+    <div class="eyebrow kick">How you earn</div>
+    <h2 class="disp">Cast a net.</h2>
+    <p>To earn, you <span class="b">cast a net</span> into a river. That's you providing liquidity to that pool. From that moment, every trade that flows past your net pays you a real fee — on the way up <span class="b">and</span> the way down. Pumping? Fees. Dumping? Fees. Chopping sideways while everyone panics? Fees. You're not predicting the chart. You're taxing the traffic.</p>
+    <p>Your take shows up live, in SOL, in your own wallet. Every net you cast is a genuine liquidity position on <a href="https://raydium.io" target="_blank" rel="noopener">Raydium</a> — pull up your wallet on <a href="https://solscan.io" target="_blank" rel="noopener">Solscan</a> and you'll see the position, and the fees it earned. Nothing to take on faith.</p>
+  </div></section>
+
+  <section><div class="col">
+    <div class="eyebrow kick">Spread the risk</div>
+    <h2 class="disp">Mix the rivers.</h2>
+    <p>Rivers meet at <span class="b">confluences</span>. So can your nets. Mix two, three, four pools into one bundle and you're no longer tied to a single coin — if one river dries up, the others keep flowing. Or paste any token's contract address and cast straight into its pools, even the freshest launches. You fish where you want.</p>
+  </div></section>
+
+  <section><div class="col">
+    <div class="eyebrow kick">No barrier</div>
+    <h2 class="disp">One click, no seed phrase.</h2>
+    <p>Here's the part that actually matters for most people: <span class="b">you don't need a wallet to start.</span> Sign in with Google. PUDL holds a Solana wallet for you, encrypted. Deposit SOL. Click a river. That's the whole flow — no seed phrase to lose, no bridge-swap-approve gauntlet, no twelve browser tabs.</p>
+    <p>Providing liquidity used to be a pro sport. Now it's a button. Deposit and withdraw are always yours; the funds never stop being yours.</p>
+  </div></section>
+
+  <section><div class="col">
+    <div class="eyebrow kick">The engine</div>
+    <h2 class="disp">Fees flow downhill.</h2>
+    <p>A token launched through PUDL can pledge its <span class="b">creator fees</span> back to the people providing its liquidity — streamed as a boost, instead of pocketed as cash. Why would a creator do that? Because deep liquidity is the only thing that keeps a launch alive. They're buying real, sticky liquidity with fee income that would otherwise just bleed their own chart.</p>
+
+    <figure class="flyfig">
+      <svg viewBox="0 0 440 300" role="img" aria-label="The flywheel: real fees pay LPs, LPs deepen liquidity, depth pulls volume, volume makes more fees.">
+        <g fill="none" stroke="#2a2a2a" stroke-width="1.5" stroke-dasharray="4 5">
+          <ellipse cx="220" cy="150" rx="150" ry="110"/>
+        </g>
+        <g fill="none" stroke="#e8ff1e" stroke-width="2">
+          <path d="M300 66 l 10 -3 l -3 11" stroke-linecap="round"/>
+          <path d="M372 176 l 3 11 l -11 -1" stroke-linecap="round"/>
+          <path d="M138 233 l -10 3 l 3 -11" stroke-linecap="round"/>
+          <path d="M68 122 l -3 -11 l 11 1" stroke-linecap="round"/>
+        </g>
+        <g font-family="'Space Mono',monospace" font-size="11" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">
+          <rect x="212" y="32" width="16" height="16" fill="#e8ff1e"/>
+          <text x="220" y="24">REAL FEES</text>
+          <rect x="362" y="142" width="16" height="16" fill="#e8ff1e"/>
+          <text x="370" y="134">PAID TO LPS</text>
+          <rect x="212" y="252" width="16" height="16" fill="#e8ff1e"/>
+          <text x="220" y="288">DEEPER LIQUIDITY</text>
+          <rect x="62" y="142" width="16" height="16" fill="#e8ff1e"/>
+          <text x="70" y="134">MORE VOLUME</text>
+          <text x="220" y="146" fill="#5a5a5a" font-size="10" letter-spacing="3">THE</text>
+          <text x="220" y="162" fill="#8a8a8a" font-size="12" letter-spacing="2">FLYWHEEL</text>
+        </g>
+      </svg>
+      <figcaption class="fly-cap">Best yields → more liquidity → more volume → bigger fees → repeat</figcaption>
+    </figure>
+
+    <p>PUDL takes a small cut of everything flowing through, and that cut does two things automatically: it <span class="b">buys back and burns $PUDL</span>, and it floods the <span class="b">flagship $PUDL river</span> — the one that pays liquidity providers the most. The best real yields pull in more liquidity, deeper liquidity pulls in more volume, more volume means more fees, bigger boosts and a bigger burn. The loop tightens on itself.</p>
+    <p>One thing stays true the whole way down: <span class="b">you earn by providing liquidity, never by passively holding a token.</span> That's the honest version, and it's the only one worth building.</p>
+  </div></section>
+
+  <section><div class="col">
+    <div class="risk">
+      <div class="eyebrow kick">The honest part</div>
+      <p style="margin-top:8px"><span class="b">Providing liquidity is not free money</span>, and anyone who tells you it is, is selling you something.</p>
+      <p>If a coin dumps out of your range, your net stops catching fees and you're left holding the weaker side of the pair — the coin that just crashed. That's <span class="b">impermanent loss</span>, the real cost of being the house. Wider nets survive bigger moves and earn less; tighter nets earn more and get shredded faster. You choose. We'd rather you understand the river before you fish it.</p>
+    </div>
+  </div></section>
+
+  <section class="proof"><div class="col">
+    <div class="eyebrow kick">Don't trust — verify</div>
+    <h2 class="disp">Verify it yourself.</h2>
+    <p>Don't take our word for any of it. Check it:</p>
+    <div class="rows">
+      <div class="row"><span class="lab">The app</span><span class="val"><a class="link" href="https://pudl.fun" target="_blank" rel="noopener">https://pudl.fun</a></span></div>
+      <div class="row"><span class="lab">Open source</span><span class="val"><span class="desc">Read the actual code — </span><a class="link" href="https://github.com/realdoomsman/pudlpudl" target="_blank" rel="noopener">github.com/realdoomsman/pudlpudl</a></span></div>
+      <div class="row"><span class="lab">Built on Raydium</span><span class="val"><span class="desc">where the real fees come from — </span><a class="link" href="https://raydium.io" target="_blank" rel="noopener">raydium.io</a></span></div>
+      <div class="row"><span class="lab">Explorer</span><span class="val"><span class="desc">verify your own positions &amp; fees — </span><a class="link" href="https://solscan.io" target="_blank" rel="noopener">solscan.io</a></span></div>
+      <div class="row"><span class="lab">Boost escrow</span><span class="val"><span class="desc">the on-chain wallet that holds &amp; streams boosts, transparent from day one — </span><a class="link" href="https://solscan.io/account/5yFLvHsnBff9qN7cfvWXSc8Da98HQJgGMmR4gAzkJ6K" target="_blank" rel="noopener">5yFL…J6K</a></span></div>
+      <div class="row warn"><span class="lab acid">$PUDL contract</span><span class="val"><span class="no">Not launched yet.</span> The official contract address will be posted here and pinned on our profile the moment it goes live. Anything claiming to be $PUDL before then is a scam — do not buy it. Screenshot this; trust nothing else.</span></div>
+    </div>
+  </div></section>
+
+  <footer class="col">
+    <div class="mark">PUDL</div>
+    <div class="tag disp">Cast a net.<br>Collect the fees.<br>Be the house.</div>
+    <div class="tick">$PUDL</div>
+    <p class="disclaim">PUDL is a liquidity tool, not financial advice. Providing liquidity carries real risk of loss (impermanent loss). You earn by providing liquidity, never by passively holding a token. Only use funds you can afford to lose.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var c=document.getElementById('riv'); if(!c) return;
+  var x=c.getContext('2d'), W,H,dpr=Math.min(window.devicePixelRatio||1,2);
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function size(){ W=c.clientWidth; H=c.clientHeight; c.width=W*dpr; c.height=H*dpr; x.setTransform(dpr,0,0,dpr,0,0); }
+  size(); window.addEventListener('resize',size);
+  var rivers=[{y:.30,a:26,w:150,c:'#0f3446'},{y:.58,a:34,w:120,c:'#123a4c'},{y:.82,a:30,w:90,c:'#0f3446'}];
+  function wave(t,off,amp,yy,width,col){
+    x.beginPath();
+    for(var px=-20;px<=W+20;px+=8){
+      var yv=yy + Math.sin((px*0.006)+off+t)*amp + Math.sin((px*0.013)-t*0.7)*amp*0.35;
+      if(px===-20)x.moveTo(px,yv); else x.lineTo(px,yv);
+    }
+    x.lineWidth=width; x.strokeStyle=col; x.lineCap='round'; x.stroke();
+    x.lineWidth=Math.max(2,width*0.16); x.strokeStyle='rgba(63,146,168,.55)'; x.stroke();
+  }
+  var t=0;
+  function frame(){
+    x.clearRect(0,0,W,H);
+    for(var i=0;i<rivers.length;i++){var r=rivers[i]; wave(t, i*2.1, r.a, H*r.y, r.w, r.c);}
+    if(!reduce){ t+=0.006; requestAnimationFrame(frame); }
+  }
+  frame();
+})();
+</script>
