@@ -27,11 +27,11 @@ export default function Home() {
               Stop being exit liquidity
             </span>
             <h1 className="display text-white text-5xl md:text-7xl mt-6 max-w-3xl">Be the house.</h1>
-            <p className="mt-6 max-w-xl text-white/60 text-[15px] leading-relaxed">
-              Every trade on Solana pays a fee, and somebody collects it. That somebody is the
-              liquidity provider — the house. PUDL turns the memecoin market into a world of rivers,
-              lets you cast liquidity where the volume floods, and collects that fee for you. In
-              pumps <span className="text-white">and</span> dumps. Panic is volume too.
+            <p className="mt-6 max-w-lg text-white/70 text-lg leading-relaxed">
+              Every trade pays a fee. <span className="text-white font-semibold">PUDL makes you the one collecting it</span> — one click, in pumps and dumps.
+            </p>
+            <p className="mt-2 max-w-lg text-white/45 text-[13px]">
+              Sign in with Google · deposit SOL · cast into a pool · earn real fees.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-2.5">
               <Link href="/rivers" className="bg-acid text-acidink eyebrow px-5 py-3 hover:bg-acidhover transition-colors">
@@ -67,27 +67,15 @@ export default function Home() {
           <div className="mt-9 grid grid-cols-1 md:grid-cols-3 gap-px bg-line border-t border-line">
             <Wi k="A river" kc="text-interneuron">
               <b>A live memecoin pool.</b>
-              <p>
-                Every river on the map is a real Raydium pool — its width is 24h volume, its colour is
-                how hard it&rsquo;s running. Every swap through it pays a trading fee. PUDL hides the
-                boring stable pairs and ranks the rest by the fee they actually paid per $1,000 parked.
-              </p>
+              <p><span className="text-white">Width = 24h volume.</span> Ranked by real yield per $1k. Boring stable pairs hidden.</p>
             </Wi>
             <Wi k="A net" kc="text-acid">
               <b>Your liquidity in the current.</b>
-              <p>
-                Cast a net and your SOL becomes a concentrated liquidity position across a price band.
-                While the price trades through your band, you collect a cut of every single trade —
-                the house&rsquo;s edge. Pull it out whenever you want.
-              </p>
+              <p>Your SOL earns a cut of <span className="text-white">every trade</span> that crosses your range. Pull out anytime.</p>
             </Wi>
             <Wi k="A home" kc="text-sensory">
               <b>Where your fees pool.</b>
-              <p>
-                Every net you cast flows into your home. Keep it solo, or open it to a crew and pool
-                nets together — the take is split by what each of you put in. Your earnings follow you
-                if you leave.
-              </p>
+              <p>Solo, or a <span className="text-white">co-op crew</span> that splits the take by what each put in.</p>
             </Wi>
           </div>
         </section>
@@ -101,51 +89,27 @@ export default function Home() {
           <div className="mt-9 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-line border-t border-line">
             <Feat k="Sign in with Google" kc="text-sensory">
               <b>No wallet, no seed phrase.</b>
-              <p>
-                Continue with Google and a Solana wallet is minted for you and held encrypted. No
-                extensions, no wallet-connect, no twelve words to lose. Deposit SOL to your address and
-                withdraw any time — every action is signed as you, server-side.
-              </p>
+              <p>A Solana wallet, held encrypted for you. <span className="text-white">Deposit and withdraw</span> anytime.</p>
             </Feat>
             <Feat k="Cast a net" kc="text-acid">
               <b>One click opens a real position.</b>
-              <p>
-                Pick a river, choose how tight your net is, and PUDL opens a genuine Raydium
-                concentrated-liquidity position with your SOL — internally, no Raydium tab, no
-                approvals. Tighter nets catch more fees but break faster when price rips out of range.
-              </p>
+              <p>Genuine on-chain liquidity with your SOL. <span className="text-white">No Raydium tab, no approvals.</span></p>
             </Feat>
             <Feat k="Collect real fees" kc="text-acid">
-              <b>A cut of every trade that crosses you.</b>
-              <p>
-                While the market trades through your band you earn a share of its fees — on the way up
-                and on the way down. You don&rsquo;t predict direction; you get paid for volume.
-                Reap your fees or pull the whole net whenever you like.
-              </p>
+              <b>Paid for volume, not direction.</b>
+              <p>A cut of every trade through your range — <span className="text-white">up-days and panic-days alike.</span></p>
             </Feat>
             <Feat k="Paste any token" kc="text-interneuron">
-              <b>Find a pool by contract address.</b>
-              <p>
-                Got a token nobody&rsquo;s mapped yet? Paste its contract address and PUDL finds every
-                pool it trades in, ranked by real yield, and lets you cast a net on the spot — the same
-                internal flow as the featured rivers.
-              </p>
+              <b>Find a pool by address.</b>
+              <p>Paste a contract address → its pools, ranked by yield, castable on the spot.</p>
             </Feat>
             <Feat k="Honest numbers" kc="text-acid">
               <b>Real rates, never a promise.</b>
-              <p>
-                Every yield you see is a backward-looking figure computed from the fees a pool actually
-                paid on-chain in the last 24 hours — not an APY we made up. Your realised take shows up
-                live in <span className="text-white/80">My Nets</span>, in SOL, as it lands.
-              </p>
+              <p>Every figure is <span className="text-white">real on-chain fees</span> from the last 24h. Your take shows live in SOL.</p>
             </Feat>
             <Feat k="Be the house" kc="text-motor">
               <b>The fee is the edge.</b>
-              <p>
-                Traders pay the fee; liquidity providers keep it. That&rsquo;s been true on every AMM
-                since day one — PUDL just makes you one of them in a single click, and shows you exactly
-                where the fees are flooding right now.
-              </p>
+              <p>Traders pay it, LPs keep it. PUDL makes you the LP — <span className="text-white">in one click.</span></p>
             </Feat>
           </div>
         </section>
@@ -156,11 +120,9 @@ export default function Home() {
             <div className="esub mb-4">The risk</div>
             <h2 className="display text-3xl md:text-[40px]">You&rsquo;re providing liquidity, not betting.</h2>
             <p className="mt-4 max-w-2xl text-white/55 text-[15px] leading-relaxed">
-              A net earns while price stays in its range. If a memecoin dumps out of your range you stop
-              earning and end up holding the weaker side of the pair — the coin that just crashed. That&rsquo;s
-              impermanent loss, and it&rsquo;s the real cost of being the house. Wider nets survive bigger
-              moves and earn less; tighter nets earn more and get shredded faster. PUDL shows you the honest
-              rate and the range — the call is yours.
+              If a coin dumps out of your range, you stop earning and hold the weaker side —{' '}
+              <span className="text-white">impermanent loss</span>, the real cost of being the house. Wider
+              nets survive bigger moves and earn less; tighter nets earn more and break faster.
             </p>
           </div>
         </section>

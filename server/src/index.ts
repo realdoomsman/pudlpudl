@@ -178,11 +178,15 @@ const isBase58Mint = (s: string) => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s)
 // pools discovered via search that aren't on the main volume page — kept here so
 // the 30s poll (which rebuilds snapshot wholesale) doesn't evict them and break
 // a cast made moments later.
-const knownPools = new Map<string, River>()
+const knownPools = new Map<string, { river: River; ts: number }>()
+const KNOWN_TTL = 10 * 60_000 // searched pools linger 10 min, then drop (avoids frozen-forever numbers)
+const KNOWN_CAP = 60
 
 // merge a searched/known pool into the live snapshot so it becomes castable
 function upsertRiver(r: River) {
-  knownPools.set(r.id, r)
+  knownPools.set(r.id, { river: r, ts: Date.now() })
+  // LRU-ish cap so /search can't grow it unbounded
+  while (knownPools.size > KNOWN_CAP) knownPools.delete(knownPools.keys().next().value as string)
   if (!snapshot) return
   if (!snapshot.rivers.some((x) => x.id === r.id)) snapshot.rivers.push(r)
 }
@@ -204,9 +208,12 @@ async function pollRivers() {
       // player actually cares about, not raw volume
       .sort((a, b) => b.totalPer1k - a.totalPer1k)
 
-    // keep searched/known pools castable across the wholesale rebuild
-    for (const [id, r] of knownPools) {
-      if (!rivers.some((x) => x.id === id)) rivers.push(r)
+    // keep recently-searched pools castable across the wholesale rebuild, but
+    // expire them so their (search-time) numbers never linger stale forever
+    const now0 = Date.now()
+    for (const [id, e] of knownPools) {
+      if (now0 - e.ts > KNOWN_TTL) { knownPools.delete(id); continue }
+      if (!rivers.some((x) => x.id === id)) rivers.push(e.river)
     }
 
     snapshot = {
@@ -370,6 +377,10 @@ app.post('/nets/cast', async (req, res) => {
   if (!Number.isFinite(amt) || amt < 0.001) return res.status(400).json({ error: 'minimum cast is 0.001 SOL' })
   const band = bandPct === undefined ? 0.15 : Number(bandPct)
   if (!Number.isFinite(band) || band <= 0 || band >= 1) return res.status(400).json({ error: 'band must be between 0 and 1' })
+  // don't persist a doomed net if the wallet can't cover it (+ fee headroom)
+  let bal = 0
+  try { bal = await balanceOf(a.pubkey) } catch {}
+  if (amt > bal - 0.002) return res.status(400).json({ error: 'not enough SOL — deposit first (keep ~0.002 for fees)' })
 
   const home = ensureHome(a.sub, `${a.name}'s pudl`)
   const net: Net = {

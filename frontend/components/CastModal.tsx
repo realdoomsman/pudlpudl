@@ -20,6 +20,7 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
   const [done, setDone] = useState(false)
 
   const amt = parseFloat(amount) || 0
+  const castable = !river.venue || river.venue === 'raydium'
 
   async function cast() {
     setErr(null)
@@ -74,6 +75,18 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
               Watch it collect
             </button>
           </div>
+        ) : !castable ? (
+          <div className="py-6 text-center">
+            <div className="text-4xl mb-3">🗺️</div>
+            <div className="font-display text-lg mb-1 uppercase tracking-tight">Indexed, not castable yet.</div>
+            <p className="text-sm text-gray-400 mb-5 leading-relaxed">
+              <span className="uppercase text-acid">{river.venue}</span> pools are on the map and searchable, but
+              casting there is coming. For now, cast into <span className="text-white">Raydium</span> rivers.
+            </p>
+            <button onClick={onClose} className="px-6 py-3 text-black font-semibold" style={{ backgroundColor: '#e8ff1e' }}>
+              Got it
+            </button>
+          </div>
         ) : (
           <>
             <div className="mb-4">
@@ -124,7 +137,7 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
                 </span>
                 <span className="font-mono font-bold" style={{ color: '#e8ff1e' }}>
                   {fmtUsd(river.feesPer1k)}
-                  <span className="text-gray-600 font-sans font-normal text-xs"> / $1k in&#8209;range</span>
+                  <span className="text-gray-600 font-sans font-normal text-xs"> / $1k of pool · 24h</span>
                 </span>
               </div>
               {river.boostPer1k > 0 && (
