@@ -84,7 +84,7 @@ export function WorldPanels({ rivers, nets, signedIn, onCast, onNetsChanged }: {
       {open.market && (
         <Win title="Market" accent="#5ad1ff" initial={{ x: 332, y: 78 }} width={330} z={zOf('market')} onFocus={() => focus('market')} onClose={() => setOpen((o) => ({ ...o, market: false }))}>
           <div className="p-1.5">
-            {rivers.slice(0, 40).map((r, i) => {
+            {[...rivers].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)).slice(0, 40).map((r, i) => {
               const boosted = r.boostPer1k > 0
               return (
                 <button key={r.id} onClick={() => onCast(r)} className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-white/[0.04] text-left border-b border-hair last:border-0">
@@ -95,7 +95,8 @@ export function WorldPanels({ rivers, nets, signedIn, onCast, onNetsChanged }: {
                       <img key={k} src={s} alt="" className="w-5 h-5 rounded-full border border-black object-cover bg-pudl-gray-800" />
                     ) : <div key={k} className="w-5 h-5 rounded-full border border-black bg-pudl-gray-800" />)}
                   </div>
-                  <span className="text-xs font-semibold truncate flex-1">{r.name}</span>
+                  <span className="text-xs font-semibold truncate flex-1" style={r.featured ? { color: '#e8ff1e' } : undefined}>{r.name}</span>
+                  {r.featured && <span className="text-[7px] font-bold px-1 text-acidink" style={{ background: '#e8ff1e' }}>★ PUDL</span>}
                   {r.venue === 'meteora' && <span className="text-[7px] font-bold px-1 mono" style={{ color: '#5ad1ff', border: '1px solid rgba(90,209,255,.4)' }}>MET</span>}
                   {r.venue === 'pumpswap' && <span className="text-[7px] font-bold px-1 mono" style={{ color: '#ffb347', border: '1px solid rgba(255,179,71,.4)' }}>PUMP</span>}
                   {boosted && <span className="text-[7px] font-bold px-1 text-acidink" style={{ background: '#ffb347' }}>B</span>}

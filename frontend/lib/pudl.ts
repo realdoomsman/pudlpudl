@@ -55,6 +55,7 @@ export interface MyNet {
   castAt: number
   feesClaimedSol: number
   boostClaimedSol: number
+  boostAccruedSol: number
 }
 
 export interface Home {
@@ -87,10 +88,17 @@ export interface Boost {
   poolId: string
   poolName: string
   sponsorLabel: string
-  totalUsd: number
-  paidUsd: number
+  source: 'creator' | 'protocol' | 'sponsor'
+  totalSol: number
+  paidSol: number
   startAt: number
   endAt: number
+}
+
+export interface TokenBal {
+  mint: string
+  amount: number
+  decimals: number
 }
 
 export interface LeaderRow {
@@ -141,11 +149,23 @@ export const pudl = {
   homeJoin: (id: string) => api<{ ok: boolean }>(`/home/join/${id}`, { method: 'POST' }),
   homeLeave: () => api<{ ok: boolean }>('/home/leave', { method: 'POST' }),
   homes: () => api<{ homes: HomeRow[] }>('/homes'),
-  boosts: () => api<{ boosts: Boost[]; total: number }>('/boosts'),
-  addBoost: (poolId: string, totalUsd: number, days: number, label: string) =>
-    api<{ ok: boolean }>('/boosts', {
+  boosts: () =>
+    api<{ boosts: Boost[]; totalSol: number; claimable: number; enabled: boolean }>('/boosts'),
+  // fund a boost: escrow SOL now, streamed to the pool's LPs over `days`
+  boost: (poolId: string, amountSol: number, days: number, label: string) =>
+    api<{ ok: boolean; escrowSig?: string }>('/boosts', {
       method: 'POST',
-      body: JSON.stringify({ poolId, totalUsd, days, label }),
+      body: JSON.stringify({ poolId, amountSol, days, label }),
+    }),
+  // claim the boost SOL you've accrued (escrow -> your wallet)
+  claimBoost: () => api<{ ok: boolean; claimedSol: number; sig?: string }>('/boosts/claim', { method: 'POST' }),
+  // SPL tokens your wallet holds — the seed side for a new pool
+  tokens: () => api<{ tokens: TokenBal[] }>('/tokens'),
+  // seed a brand-new token/SOL river
+  createPool: (tokenMint: string, tokenAmount: number, solAmount: number) =>
+    api<{ ok: boolean; txId?: string; poolId?: string }>('/rivers/create', {
+      method: 'POST',
+      body: JSON.stringify({ tokenMint, tokenAmount, solAmount }),
     }),
   leaderboard: () => api<{ season: number; rows: LeaderRow[] }>('/leaderboard'),
 }

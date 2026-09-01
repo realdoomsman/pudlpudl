@@ -139,6 +139,20 @@ export function accountKeypair(a: Account): Keypair {
   return Keypair.fromSecretKey(decrypt(a.enc))
 }
 
+// The boost-escrow wallet. Sponsors fund a boost by moving SOL here; it streams
+// out to LPs and pays them when they claim. Derived deterministically from the
+// master key so it's the SAME wallet across restarts (never regenerated — that
+// would strand escrowed funds). It holds pooled third-party SOL, so it only ever
+// moves money the boost ledger says it owes.
+let _escrow: Keypair | null = null
+export function escrowKeypair(): Keypair {
+  if (_escrow) return _escrow
+  const seed = crypto.createHmac('sha256', MASTER).update('pudl-boost-escrow-v1').digest()
+  _escrow = Keypair.fromSeed(seed.subarray(0, 32))
+  return _escrow
+}
+export const escrowPubkey = (): string => escrowKeypair().publicKey.toBase58()
+
 export function accountBySub(sub: string): Account | undefined {
   return accounts.get(sub)
 }

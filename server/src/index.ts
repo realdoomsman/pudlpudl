@@ -17,6 +17,8 @@ import {
   revokeSession,
   accountBySub,
   accountCount,
+  escrowKeypair,
+  escrowPubkey,
   type Account,
 } from './custody'
 import {
@@ -25,7 +27,10 @@ import {
   boosts,
   saveBoosts,
   activeBoosts,
+  accrueBoosts,
   boostRateForPool,
+  claimableBoostSol,
+  markBoostClaimedUpTo,
   leaderboard,
   newId,
   homes,
@@ -34,10 +39,18 @@ import {
   ensureHome,
   homeStats,
   type Net,
+  type Boost,
 } from './model'
-import { openNet, harvestNet, closeNet, balanceOf, withdrawSol } from './cast'
+import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, splTokenBalances, createCpmmPool } from './cast'
 
 const PORT = Number(process.env.PORT || 8080)
+
+// Money-moving features that hold or route real user funds stay OFF until a
+// funded end-to-end test. Flip on (BOOSTS_ENABLED=1 / POOLS_ENABLED=1) only after
+// verifying the escrow + pool-creation paths with real SOL on the live wallet.
+const BOOSTS_ENABLED = process.env.BOOSTS_ENABLED === '1'
+const POOLS_ENABLED = process.env.POOLS_ENABLED === '1'
+const MIN_BOOST_SOL = 0.05
 
 // ---------------------------------------------------------------- rivers + meme lens
 
@@ -75,7 +88,14 @@ interface River {
   flow: Flow
   meme: boolean
   venue: 'raydium' | 'meteora' | 'pumpswap'
+  featured?: boolean // the $PUDL flagship river (set once the token launches)
 }
+
+// the $PUDL token mint — set at launch. Any pool holding it becomes the flagship
+// river (pinned, crowned, and where creator-fee + protocol boosts stack).
+const FEATURED_MINT = (process.env.PUDL_MINT || '').trim()
+const isFeatured = (mintA: string, mintB: string) =>
+  !!FEATURED_MINT && (mintA === FEATURED_MINT || mintB === FEATURED_MINT)
 interface Snapshot {
   updatedAt: number
   totalFees24h: number
@@ -122,6 +142,7 @@ function mapPool(p: any): River {
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'raydium',
+    featured: isFeatured(p.mintA?.address || '', p.mintB?.address || ''),
   }
 }
 
@@ -155,6 +176,7 @@ function mapMeteora(p: any): River {
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'meteora',
+    featured: isFeatured(p.token_x?.address || '', p.token_y?.address || ''),
   }
 }
 
@@ -189,6 +211,7 @@ function mapDexPumpswap(p: any): River {
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'pumpswap',
+    featured: isFeatured(p.baseToken?.address || '', p.quoteToken?.address || ''),
   }
 }
 
@@ -254,7 +277,7 @@ async function pollRivers() {
       updatedAt: Date.now(),
       totalFees24h: rivers.reduce((s, r) => s + r.fees24h, 0),
       totalVol24h: rivers.reduce((s, r) => s + r.vol24h, 0),
-      totalBoost: activeBoosts().reduce((s, b) => s + (b.totalUsd - b.paidUsd), 0),
+      totalBoost: activeBoosts().reduce((s, b) => s + (b.totalSol - b.paidSol), 0),
       rivers,
     }
     const now = Date.now()
@@ -282,7 +305,14 @@ function auth(req: express.Request): Account | null {
 }
 
 app.get('/health', (_req, res) =>
-  res.json({ ok: true, updatedAt: snapshot?.updatedAt ?? 0, accounts: accountCount() }),
+  res.json({
+    ok: true,
+    updatedAt: snapshot?.updatedAt ?? 0,
+    accounts: accountCount(),
+    boostsEnabled: BOOSTS_ENABLED,
+    poolsEnabled: POOLS_ENABLED,
+    escrow: escrowPubkey(),
+  }),
 )
 
 // -------- rivers --------
@@ -456,6 +486,7 @@ app.post('/nets/cast', async (req, res) => {
     closedAt: null,
     feesClaimedSol: 0,
     boostClaimedSol: 0,
+    boostAccruedSol: 0,
   }
   nets.push(net)
   saveNets()
@@ -508,7 +539,7 @@ app.post('/nets/mix', async (req, res) => {
       id: newId('net'), sub: a.sub, homeId: home.id, bundleId,
       poolId: r.river!.id, poolName: r.river!.name, positionMint: null,
       amountSol: legAmt, status: 'opening', openSig: null,
-      castAt: Date.now(), closedAt: null, feesClaimedSol: 0, boostClaimedSol: 0,
+      castAt: Date.now(), closedAt: null, feesClaimedSol: 0, boostClaimedSol: 0, boostAccruedSol: 0,
     }
     nets.push(net)
     return { net, river: r.river!, legAmt, band: r.band }
@@ -679,20 +710,98 @@ app.get('/homes', (_req, res) => {
   res.json({ homes: rows })
 })
 
-// -------- boosts: the bribe market --------
-app.get('/boosts', (_req, res) => {
-  res.json({ boosts: activeBoosts(), total: activeBoosts().reduce((s, b) => s + (b.totalUsd - b.paidUsd), 0) })
+// -------- boosts: fees flow downhill into the rivers --------
+// A boost is a REAL pot of SOL escrowed up front and streamed to a pool's live
+// LPs over a window (see model.accrueBoosts). Funding is gated behind
+// BOOSTS_ENABLED until the escrow path is verified with real SOL.
+app.get('/boosts', (req, res) => {
+  const a = auth(req)
+  const active = activeBoosts()
+  const totalSol = active.reduce((s, b) => s + (b.totalSol - b.paidSol), 0)
+  res.json({ boosts: active, totalSol, claimable: a ? claimableBoostSol(a.sub) : 0, enabled: BOOSTS_ENABLED })
 })
 
-// Creating a boost would mean escrowing real funds from the sponsor and
-// streaming them to LPs. That escrow + settlement path isn't built yet, so we
-// refuse rather than record a boost nobody funded (which would fabricate yield
-// and corrupt the river ranking). The GET side stays live and simply reports no
-// active boosts until this lands.
-app.post('/boosts', (req, res) => {
+// fund a boost: escrow SOL now, stream it to the pool's LPs over `days`
+app.post('/boosts', async (req, res) => {
   const a = auth(req)
   if (!a) return res.status(401).json({ error: 'sign in' })
-  return res.status(501).json({ error: 'boost funding is not live yet' })
+  if (!BOOSTS_ENABLED)
+    return res.status(503).json({ error: 'boosts open at launch \u2014 funding goes live after the escrow test' })
+  const { poolId, amountSol, days, label } = req.body ?? {}
+  const river = riverById(String(poolId))
+  if (!river) return res.status(400).json({ error: 'unknown river' })
+  const amt = Number(amountSol)
+  if (!Number.isFinite(amt) || amt < MIN_BOOST_SOL) return res.status(400).json({ error: `minimum boost is ${MIN_BOOST_SOL} SOL` })
+  const dur = Math.max(1, Math.min(Number(days) || 7, 90))
+  let bal = 0
+  try { bal = await balanceOf(a.pubkey) } catch {}
+  if (amt > bal - 0.002) return res.status(400).json({ error: 'not enough SOL to fund this boost (keep ~0.002 for fees)' })
+  try {
+    const sig = await transferSol(accountKeypair(a), escrowPubkey(), amt) // escrow the pot up front
+    const now = Date.now()
+    const boost: Boost = {
+      id: newId('boost'), poolId: river.id, poolName: river.name,
+      sponsorSub: a.sub, sponsorLabel: String(label || a.name || 'sponsor').slice(0, 24),
+      source: 'sponsor', totalSol: amt, paidSol: 0,
+      startAt: now, endAt: now + dur * 86_400_000, lastAccrualAt: now,
+    }
+    boosts.push(boost)
+    saveBoosts()
+    res.json({ ok: true, boost, escrowSig: sig })
+  } catch (e: any) {
+    res.status(500).json({ error: String(e?.message ?? e).slice(0, 140) })
+  }
+})
+
+// claim the boost SOL you've accrued from providing liquidity (escrow -> wallet)
+app.post('/boosts/claim', async (req, res) => {
+  const a = auth(req)
+  if (!a) return res.status(401).json({ error: 'sign in' })
+  accrueBoosts() // settle the stream up to now first
+  const owed = claimableBoostSol(a.sub)
+  if (owed < 0.0001) return res.json({ ok: true, claimedSol: 0 })
+  try {
+    const sig = await transferSol(escrowKeypair(), a.pubkey, owed)
+    const cleared = markBoostClaimedUpTo(a.sub, owed)
+    res.json({ ok: true, claimedSol: cleared, sig })
+  } catch (e: any) {
+    res.status(500).json({ error: String(e?.message ?? e).slice(0, 140) })
+  }
+})
+
+// -------- create your own river: seed a Raydium pool for any token --------
+// SPL tokens the signed-in wallet holds \u2014 the seed side for a new pool
+app.get('/tokens', async (req, res) => {
+  const a = auth(req)
+  if (!a) return res.status(401).json({ error: 'sign in' })
+  try {
+    res.json({ tokens: await splTokenBalances(a.pubkey) })
+  } catch (e: any) {
+    res.status(502).json({ error: String(e?.message ?? e).slice(0, 120) })
+  }
+})
+
+// seed a brand-new token/SOL pool. Gated behind POOLS_ENABLED until verified.
+app.post('/rivers/create', async (req, res) => {
+  const a = auth(req)
+  if (!a) return res.status(401).json({ error: 'sign in' })
+  if (!POOLS_ENABLED)
+    return res.status(503).json({ error: 'pool creation opens at launch \u2014 it goes live after the create-pool test' })
+  const { tokenMint, tokenAmount, solAmount } = req.body ?? {}
+  if (!isBase58Mint(String(tokenMint))) return res.status(400).json({ error: 'paste a valid token address' })
+  const tAmt = Number(tokenAmount)
+  const sAmt = Number(solAmount)
+  if (!Number.isFinite(tAmt) || tAmt <= 0) return res.status(400).json({ error: 'enter how much of the token to seed' })
+  if (!Number.isFinite(sAmt) || sAmt <= 0) return res.status(400).json({ error: 'enter how much SOL to seed' })
+  let bal = 0
+  try { bal = await balanceOf(a.pubkey) } catch {}
+  if (sAmt > bal - 0.05) return res.status(400).json({ error: 'not enough SOL \u2014 creating a pool also costs a Raydium fee (~0.15 SOL)' })
+  try {
+    const { txId, poolId } = await createCpmmPool(accountKeypair(a), String(tokenMint), tAmt, sAmt)
+    res.json({ ok: true, txId, poolId })
+  } catch (e: any) {
+    res.status(500).json({ error: String(e?.message ?? e).slice(0, 160) })
+  }
 })
 
 // -------- leaderboard --------
@@ -710,7 +819,7 @@ app.get('/stats', (_req, res) => {
     updatedAt: snapshot?.updatedAt ?? 0,
     totalFees24h: snapshot?.totalFees24h ?? 0,
     totalVol24h: snapshot?.totalVol24h ?? 0,
-    activeBoost: activeBoosts().reduce((s, b) => s + (b.totalUsd - b.paidUsd), 0),
+    activeBoost: activeBoosts().reduce((s, b) => s + (b.totalSol - b.paidSol), 0),
     riversTracked: snapshot?.rivers.filter((r) => r.meme).length ?? 0,
     accounts: accountCount(),
     netsLive: nets.filter((n) => n.status === 'live').length,
@@ -719,4 +828,8 @@ app.get('/stats', (_req, res) => {
 
 pollRivers()
 setInterval(pollRivers, 30_000)
+// settle boost streams onto live LPs once a minute so accrual stays current
+setInterval(() => {
+  try { accrueBoosts() } catch (e: any) { console.error('[boosts] accrue failed:', String(e?.message ?? e).slice(0, 120)) }
+}, 60_000).unref?.()
 app.listen(PORT, () => console.log(`[pudl] backend on :${PORT}`))

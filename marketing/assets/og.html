@@ -1,0 +1,125 @@
+<head>
+<meta charset="utf-8">
+<title>PUDL — OG 1200x630</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #000000; }
+  .root {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: #000000;
+    font-family: 'Space Mono', monospace;
+  }
+  .frame {
+    position: absolute;
+    top: 40px; left: 40px; right: 40px; bottom: 40px;
+    border: 1px dashed rgba(255,255,255,0.13);
+    border-radius: 2px;
+  }
+  .brand {
+    position: absolute;
+    left: 76px; top: 74px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 40px;
+    letter-spacing: -0.02em;
+    color: #e8ff1e;
+    text-transform: uppercase;
+  }
+  .brand .dot { color: #e8ff1e; }
+  .tag-tr {
+    position: absolute;
+    right: 78px; top: 84px;
+    text-align: right;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+  }
+  .headline {
+    position: absolute;
+    left: 74px; top: 208px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 138px;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  .subline {
+    position: absolute;
+    left: 78px; top: 488px;
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.72);
+    text-transform: uppercase;
+  }
+  .foot-rule {
+    position: absolute;
+    left: 76px; right: 76px; top: 540px;
+    border-top: 1px dashed rgba(255,255,255,0.13);
+  }
+  .foot {
+    position: absolute;
+    left: 78px; top: 560px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    color: rgba(255,255,255,0.42);
+    text-transform: uppercase;
+  }
+  .foot-r {
+    position: absolute;
+    right: 78px; top: 560px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    color: rgba(255,255,255,0.42);
+    text-transform: uppercase;
+  }
+  .motif {
+    position: absolute;
+    right: 56px; top: 150px;
+    width: 470px;
+    height: 340px;
+  }
+</style>
+</head>
+<body>
+  <div class="root">
+    <div class="frame"></div>
+
+    <!-- subtle river motif, right side, behind headline whitespace -->
+    <svg class="motif" viewBox="0 0 470 340" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <path d="M40 20 C 130 70, 150 150, 250 190" stroke="rgba(255,255,255,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M20 150 C 120 165, 190 180, 250 190" stroke="rgba(255,255,255,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M60 320 C 150 280, 190 225, 250 190" stroke="rgba(255,255,255,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M250 190 C 330 190, 390 190, 456 190" stroke="#e8ff1e" stroke-width="5" stroke-linecap="round"/>
+      <rect x="243" y="183" width="14" height="14" fill="#e8ff1e"/>
+      <rect x="448" y="183" width="14" height="14" fill="#e8ff1e"/>
+    </svg>
+
+    <div class="brand">PUDL<span class="dot">.</span></div>
+    <div class="tag-tr">LIQUIDITY FOR<br>MEMECOIN RIVERS</div>
+
+    <div class="headline">BE THE<br>HOUSE.</div>
+
+    <div class="subline">CAST A NET. COLLECT THE FEES. — SOLANA</div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">FEES FLOW DOWNHILL.</div>
+    <div class="foot-r">PROVIDE LIQUIDITY · COLLECT THE REAL FEES</div>
+  </div>
+</body>

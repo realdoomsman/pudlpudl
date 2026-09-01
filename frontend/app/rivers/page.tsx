@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { Nav } from '@/components/Nav'
 import { CastModal } from '@/components/CastModal'
 import { MixModal } from '@/components/MixModal'
+import { CreatorModal } from '@/components/CreatorModal'
 import { WorldPanels } from '@/components/WorldPanels'
 import { SearchBar } from '@/components/SearchBar'
 import { useAuth } from '@/lib/auth'
@@ -26,6 +27,7 @@ export default function RiversPage() {
   const [showAll, setShowAll] = useState(false)
   const [cast, setCast] = useState<River | null>(null)
   const [mixOpen, setMixOpen] = useState(false)
+  const [creatorOpen, setCreatorOpen] = useState(false)
   const [nets, setNets] = useState<MyNet[]>([])
 
   useEffect(() => {
@@ -82,12 +84,20 @@ export default function RiversPage() {
           <div className="pointer-events-auto">
             <SearchBar onCast={setCast} />
           </div>
-          <button
-            onClick={() => setMixOpen(true)}
-            className="pointer-events-auto eyebrow px-3 py-1.5 border border-acid/35 bg-acid/[0.08] text-acid hover:bg-acid/[0.14] transition-colors"
-          >
-            ⋔ Mix rivers
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setMixOpen(true)}
+              className="pointer-events-auto eyebrow px-3 py-1.5 border border-acid/35 bg-acid/[0.08] text-acid hover:bg-acid/[0.14] transition-colors"
+            >
+              ⋔ Mix rivers
+            </button>
+            <button
+              onClick={() => setCreatorOpen(true)}
+              className="pointer-events-auto eyebrow px-3 py-1.5 border border-hair bg-surface text-white/60 hover:text-acid hover:border-acid/35 transition-colors"
+            >
+              ◇ Create / Boost
+            </button>
+          </div>
         </div>
 
         {/* top-right: live stats grid (Elegans #stats) */}
@@ -144,6 +154,7 @@ export default function RiversPage() {
 
       {cast && <CastModal river={cast} onClose={() => setCast(null)} />}
       {mixOpen && <MixModal rivers={rivers} onClose={() => setMixOpen(false)} onDone={reloadNets} />}
+      {creatorOpen && <CreatorModal rivers={rivers} onClose={() => setCreatorOpen(false)} />}
     </div>
   )
 }

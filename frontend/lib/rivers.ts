@@ -23,6 +23,7 @@ export interface River {
   flow: 'FLASH FLOOD' | 'SURGE' | 'FLOWING' | 'CALM'
   meme: boolean
   venue?: 'raydium' | 'meteora' | 'pumpswap'
+  featured?: boolean // the $PUDL flagship river
 }
 
 export interface RiversSnapshot {

@@ -105,7 +105,8 @@ export interface Net {
   castAt: number
   closedAt: number | null
   feesClaimedSol: number // real trading fees harvested, measured in SOL
-  boostClaimedSol: number // boost rewards harvested, measured in SOL
+  boostClaimedSol: number // boost rewards actually paid out to the wallet, in SOL
+  boostAccruedSol: number // boost rewards owed but still sitting in escrow, in SOL
 }
 
 /** Everything a home has pulled in (across all its members' nets), in SOL. */
@@ -122,45 +123,116 @@ export function homeStats(homeId: string) {
   return { collected, staked, live, nets: hn.length, contributions: [...byMember.entries()].map(([sub, amt]) => ({ sub, amt })) }
 }
 
-export const nets: Net[] = loadJson<Net[]>('nets.json', [])
+// coerce older records that predate boostAccruedSol so the ledger math is safe
+export const nets: Net[] = loadJson<any[]>('nets.json', []).map((n) => ({
+  boostAccruedSol: 0,
+  ...n,
+})) as Net[]
 export const saveNets = () => saveJson('nets.json', nets)
 
 // ------------------------------------------------------------------ boosts
 
-// A boost is a bribe a creator places on a pool: a pot of value paid out to
-// LPs providing liquidity to that pool, streamed over a window.
+// A boost is a real pot of SOL streamed to the LPs of one pool over a window.
+// The pot is escrowed up front (moved into the boost-escrow wallet); this ledger
+// tracks how much has been streamed out and to whom. Sources:
+//   creator  — a token creator's pump.fun-style fees, pledged back to their LPs
+//   protocol — PUDL's own fee cut, floods into the $PUDL flagship river
+//   sponsor  — anyone bribing a pool for deeper liquidity
 export interface Boost {
   id: string
   poolId: string
   poolName: string
-  sponsorSub: string | null // account that funded it (creator)
+  sponsorSub: string | null // account that funded it (null = protocol)
   sponsorLabel: string // display: token symbol or wallet-short
-  totalUsd: number // size of the bribe
-  paidUsd: number // streamed out so far
+  source: 'creator' | 'protocol' | 'sponsor'
+  totalSol: number // size of the pot, escrowed up front
+  paidSol: number // streamed to LPs so far
   startAt: number
   endAt: number
+  lastAccrualAt: number // last time the stream was settled
 }
 
-export const boosts: Boost[] = loadJson<Boost[]>('boosts.json', [])
+export const boosts: Boost[] = loadJson<any[]>('boosts.json', []).map((b) => ({
+  source: 'sponsor' as const,
+  lastAccrualAt: b.startAt ?? Date.now(),
+  ...b,
+  totalSol: Number(b.totalSol ?? b.totalUsd ?? 0),
+  paidSol: Number(b.paidSol ?? b.paidUsd ?? 0),
+})) as Boost[]
 export const saveBoosts = () => saveJson('boosts.json', boosts)
 
 /** Boost still live and with budget left. */
 export function activeBoosts(now = Date.now()): Boost[] {
-  return boosts.filter((b) => b.endAt > now && b.paidUsd < b.totalUsd)
+  return boosts.filter((b) => b.endAt > now && b.paidSol < b.totalSol)
 }
 
-/** Remaining boost /day being offered on a pool right now. Never advertises a
+/** Remaining boost SOL/day being offered on a pool right now. Never advertises a
  * rate above the actual remaining budget (a sub-day boost pays out its rest,
- * not a 20x-annualized figure). */
+ * not an annualized figure). */
 export function boostRateForPool(poolId: string, now = Date.now()): number {
   let perDay = 0
   for (const b of activeBoosts(now)) {
     if (b.poolId !== poolId) continue
-    const remaining = b.totalUsd - b.paidUsd
+    const remaining = b.totalSol - b.paidSol
     const daysLeft = (b.endAt - now) / 86_400_000
     perDay += daysLeft >= 1 ? remaining / daysLeft : remaining
   }
   return perDay
+}
+
+/**
+ * Stream every active boost's SOL to that pool's LIVE LPs, pro-rata by stake,
+ * for the time elapsed since the last settlement. Pure ledger move: it credits
+ * each net's `boostAccruedSol` (claimable) and advances the boost's `paidSol`.
+ * The SOL itself sits in escrow until a player claims. Time with no live LPs
+ * pays nobody (that slice stays as un-streamed budget). Returns true if changed.
+ */
+export function accrueBoosts(now = Date.now()): boolean {
+  let changed = false
+  for (const b of boosts) {
+    if (b.paidSol >= b.totalSol) continue
+    const windowMs = b.endAt - b.startAt
+    if (windowMs <= 0) continue
+    const from = Math.max(b.lastAccrualAt, b.startAt)
+    const until = Math.min(now, b.endAt)
+    if (until <= from) continue
+    let release = b.totalSol * ((until - from) / windowMs)
+    if (release <= 0) continue
+    if (b.paidSol + release > b.totalSol) release = b.totalSol - b.paidSol
+    b.lastAccrualAt = until
+    const live = nets.filter((n) => n.poolId === b.poolId && n.status === 'live')
+    const totalStake = live.reduce((s, n) => s + n.amountSol, 0)
+    changed = true
+    if (totalStake <= 0) continue // no LPs this slice → nobody paid
+    for (const n of live) n.boostAccruedSol = (n.boostAccruedSol || 0) + release * (n.amountSol / totalStake)
+    b.paidSol += release
+  }
+  if (changed) { saveNets(); saveBoosts() }
+  return changed
+}
+
+/** SOL a player is owed from boosts (accrued, still in escrow). */
+export function claimableBoostSol(sub: string): number {
+  return nets.filter((n) => n.sub === sub).reduce((s, n) => s + (n.boostAccruedSol || 0), 0)
+}
+
+/** Move up to `cap` SOL of a player's accrued boosts into "claimed" (call AFTER
+ * the escrow→wallet transfer confirms). Returns the amount actually cleared. */
+export function markBoostClaimedUpTo(sub: string, cap: number): number {
+  let remaining = cap
+  let claimed = 0
+  for (const n of nets) {
+    if (n.sub !== sub || remaining <= 0) continue
+    const a = n.boostAccruedSol || 0
+    if (a <= 0) continue
+    const take = Math.min(a, remaining)
+    n.boostAccruedSol = a - take
+    n.boostClaimedSol += take
+    remaining -= take
+    claimed += take
+  }
+  if (claimed > 0) saveNets()
+  return claimed
 }
 
 // ------------------------------------------------------------- leaderboard

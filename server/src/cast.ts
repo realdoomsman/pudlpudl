@@ -20,6 +20,8 @@ import {
   TickUtil,
   LiquidityMathUtil,
   CLMM_PROGRAM_ID,
+  CREATE_CPMM_POOL_PROGRAM,
+  CREATE_CPMM_POOL_FEE_ACC,
   type ApiV3PoolInfoConcentratedItem,
 } from '@raydium-io/raydium-sdk-v2'
 import BN from 'bn.js'
@@ -246,4 +248,98 @@ export async function withdrawSol(owner: Keypair, to: string, sol: number): Prom
   const sig = await connection.sendTransaction(tx, [owner])
   await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed')
   return sig
+}
+
+// ---------------------------------------------------------------- transfers
+
+/** Move SOL between wallets the server controls (e.g. into/out of escrow). */
+export async function transferSol(from: Keypair, to: string | PublicKey, sol: number): Promise<string> {
+  const dest = to instanceof PublicKey ? to : new PublicKey(to)
+  const lamports = Math.floor(sol * 1e9)
+  if (lamports <= 0) throw new Error('amount too small')
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
+  const tx = new Transaction({ feePayer: from.publicKey, blockhash, lastValidBlockHeight }).add(
+    SystemProgram.transfer({ fromPubkey: from.publicKey, toPubkey: dest, lamports }),
+  )
+  const sig = await connection.sendTransaction(tx, [from])
+  await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed')
+  return sig
+}
+
+// ---------------------------------------------------------------- spl balances
+
+const TOKEN_PROGRAM = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+const TOKEN_2022_PROGRAM = new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
+
+/** Every SPL token (both token programs) the wallet holds a non-zero balance of. */
+export async function splTokenBalances(
+  pubkey: string,
+): Promise<Array<{ mint: string; amount: number; decimals: number }>> {
+  const owner = new PublicKey(pubkey)
+  const out: Array<{ mint: string; amount: number; decimals: number }> = []
+  for (const programId of [TOKEN_PROGRAM, TOKEN_2022_PROGRAM]) {
+    try {
+      const r = await connection.getParsedTokenAccountsByOwner(owner, { programId })
+      for (const { account } of r.value) {
+        const info = (account.data as any)?.parsed?.info
+        const amt = info?.tokenAmount
+        if (amt && Number(amt.uiAmount) > 0) {
+          out.push({ mint: String(info.mint), amount: Number(amt.uiAmount), decimals: Number(amt.decimals) })
+        }
+      }
+    } catch {}
+  }
+  return out
+}
+
+// ---------------------------------------------------------------- launch a pool
+
+/**
+ * Seed a brand-new Raydium CPMM (constant-product) pool pairing `tokenMint`
+ * against SOL. The custodial wallet must already hold `tokenUiAmount` of the
+ * token AND `solUiAmount` SOL — both sides are deposited into the new pool.
+ *
+ * UNVERIFIED until a funded end-to-end test: creating a pool is a real,
+ * irreversible on-chain action that spends the Raydium pool-creation fee. Shape
+ * follows @raydium-io/raydium-sdk-v2's cpmm.createPool demo.
+ */
+export async function createCpmmPool(
+  owner: Keypair,
+  tokenMint: string,
+  tokenUiAmount: number,
+  solUiAmount: number,
+): Promise<{ txId: string; poolId: string }> {
+  if (tokenMint === WSOL) throw new Error('pick a token other than SOL to pair against SOL')
+  const raydium = await sdkFor(owner)
+  const feeConfigs = await raydium.api.getCpmmConfigs()
+  if (!feeConfigs?.length) throw new Error('could not load pool fee configs')
+  const tokenInfo = await raydium.token.getTokenInfo(tokenMint)
+  const wsolInfo = await raydium.token.getTokenInfo(WSOL)
+  const tokenAmt = new BN(new Decimal(tokenUiAmount).mul(10 ** tokenInfo.decimals).toFixed(0))
+  const solAmt = new BN(new Decimal(solUiAmount).mul(10 ** wsolInfo.decimals).toFixed(0))
+  if (tokenAmt.lten(0) || solAmt.lten(0)) throw new Error('both sides must be > 0')
+
+  // Raydium orders the two mints canonically (by address bytes); keep the amount
+  // paired with its mint through the swap.
+  let mintA = tokenInfo, mintB = wsolInfo, amountA = tokenAmt, amountB = solAmt
+  if (Buffer.compare(new PublicKey(tokenMint).toBuffer(), new PublicKey(WSOL).toBuffer()) > 0) {
+    mintA = wsolInfo; mintB = tokenInfo; amountA = solAmt; amountB = tokenAmt
+  }
+
+  const { execute, extInfo } = await raydium.cpmm.createPool({
+    programId: CREATE_CPMM_POOL_PROGRAM,
+    poolFeeAccount: CREATE_CPMM_POOL_FEE_ACC,
+    mintA,
+    mintB,
+    mintAAmount: amountA,
+    mintBAmount: amountB,
+    startTime: new BN(0),
+    feeConfig: feeConfigs[0],
+    associatedOnly: false,
+    ownerInfo: { useSOLBalance: true },
+    txVersion,
+  } as any)
+  const { txId } = await execute({ sendAndConfirm: true })
+  const poolId = String((extInfo as any)?.address?.poolId ?? '')
+  return { txId, poolId }
 }

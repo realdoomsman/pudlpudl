@@ -1,0 +1,107 @@
+<head>
+<meta charset="utf-8">
+<title>PUDL — Banner 1500x500</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #000000; }
+  .root {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1500px;
+    height: 500px;
+    overflow: hidden;
+    background: #000000;
+    font-family: 'Space Mono', monospace;
+  }
+  /* left lockup kept in upper-center band, clear of X avatar (bottom-left) */
+  .kicker {
+    position: absolute;
+    left: 96px; top: 118px;
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.30em;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+  }
+  .wordmark {
+    position: absolute;
+    left: 92px; top: 150px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 150px;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  .wordmark .dot { color: #e8ff1e; }
+  .tagline {
+    position: absolute;
+    left: 96px; top: 330px;
+    font-family: 'Space Mono', monospace;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: rgba(255,255,255,0.72);
+    text-transform: uppercase;
+  }
+  .rule {
+    position: absolute;
+    left: 96px; top: 372px;
+    width: 690px;
+    border-top: 1px dashed rgba(255,255,255,0.13);
+  }
+  .diagram {
+    position: absolute;
+    right: 60px; top: 70px;
+    width: 500px;
+    height: 360px;
+  }
+  .diagram-label {
+    position: absolute;
+    right: 62px; top: 436px;
+    width: 500px;
+    text-align: right;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    color: rgba(255,255,255,0.42);
+    text-transform: uppercase;
+  }
+  .vrule {
+    position: absolute;
+    left: 900px; top: 90px;
+    height: 320px;
+    border-left: 1px dashed rgba(255,255,255,0.13);
+  }
+</style>
+</head>
+<body>
+  <div class="root">
+    <div class="kicker">SOLANA · PROVIDE LIQUIDITY · COLLECT THE FEES</div>
+    <div class="wordmark">PUDL<span class="dot">.</span></div>
+    <div class="tagline">BE THE HOUSE. — PROVIDE LIQUIDITY TO MEMECOIN RIVERS, COLLECT THE REAL FEES.</div>
+    <div class="rule"></div>
+    <div class="vrule"></div>
+    <!-- river system: tributaries (white/grey) converging into an acid trunk flowing downhill/right -->
+    <svg class="diagram" viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <path d="M14 46 C 120 78, 190 150, 268 188" stroke="rgba(255,255,255,0.40)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M14 150 C 110 170, 190 184, 268 188" stroke="rgba(255,255,255,0.40)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M14 316 C 120 288, 195 230, 268 188" stroke="rgba(255,255,255,0.40)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M96 240 C 160 224, 210 206, 268 188" stroke="rgba(255,255,255,0.24)" stroke-width="2" stroke-linecap="round"/>
+      <!-- trunk -->
+      <path d="M268 188 C 350 188, 410 188, 486 188" stroke="#e8ff1e" stroke-width="7" stroke-linecap="round"/>
+      <!-- confluence node + mouth -->
+      <rect x="260" y="180" width="16" height="16" fill="#e8ff1e"/>
+      <rect x="478" y="180" width="16" height="16" fill="#e8ff1e"/>
+      <rect x="8" y="40" width="12" height="12" fill="rgba(255,255,255,0.5)"/>
+      <rect x="8" y="144" width="12" height="12" fill="rgba(255,255,255,0.5)"/>
+      <rect x="8" y="310" width="12" height="12" fill="rgba(255,255,255,0.5)"/>
+    </svg>
+    <div class="diagram-label">TRIBUTARIES → TRUNK · FEES FLOW DOWNHILL</div>
+  </div>
+</body>

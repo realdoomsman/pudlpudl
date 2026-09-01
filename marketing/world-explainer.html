@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PUDL — Be the House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;width:100%;background:#000;overflow:hidden}
+  body{font-family:'Inter',system-ui,sans-serif}
+
+  #stage{
+    position:absolute;left:50%;top:50%;
+    width:1280px;height:720px;
+    transform-origin:center center;
+    transform:translate(-50%,-50%) scale(1);
+    background:#000;overflow:hidden;
+  }
+  #water{position:absolute;inset:0;display:block}
+
+  .overlay{position:absolute;inset:0;pointer-events:none;opacity:0}
+  .hd{font-family:'Archivo Black',system-ui,sans-serif;text-transform:uppercase;color:#fff}
+  .mono{font-family:'Space Mono',ui-monospace,monospace;text-transform:uppercase;letter-spacing:0.15em;color:rgba(255,255,255,0.5)}
+  .body{font-family:'Inter',system-ui,sans-serif;color:rgba(255,255,255,0.7)}
+  .acc{color:#e8ff1e}
+
+  /* ---- scene 1 ---- */
+  #s1{display:flex;flex-direction:column;align-items:center;justify-content:center}
+  /* ---- scene 5 outro ---- */
+  #s5outro{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0}
+
+  .kicker{font-size:11px;margin-bottom:26px}
+  .wordmark{font-size:188px;line-height:0.86;letter-spacing:-0.035em}
+  .tagline{font-size:52px;letter-spacing:-0.012em;margin-top:10px}
+  .subline{font-size:12px;margin-top:28px;letter-spacing:0.18em;color:rgba(255,255,255,0.55)}
+
+  .corner-head{position:absolute;left:70px;top:66px;max-width:470px}
+  .corner-head .eyebrow{font-size:11px;margin-bottom:14px}
+  .corner-head .title{font-size:46px;letter-spacing:-0.012em}
+  .corner-head .desc{font-size:17px;line-height:1.5;margin-top:16px;max-width:440px}
+
+  /* counter panel */
+  #counter{position:absolute;right:70px;top:96px;min-width:312px;
+    border:2px solid rgba(255,255,255,0.13);padding:20px 24px;background:rgba(0,0,0,0.4)}
+  #counter .lab{font-size:10px}
+  #counter .val{font-size:44px;letter-spacing:-0.01em;margin-top:12px;color:#e8ff1e;font-family:'Archivo Black',sans-serif}
+  #counter .foot{font-size:9px;color:rgba(255,255,255,0.35);margin-top:10px;letter-spacing:0.14em}
+
+  .river-tag{position:absolute;font-size:11px}
+  .river-tag .rule{width:2px;background:rgba(255,255,255,0.3);margin:8px auto 0}
+
+  /* HUD */
+  #sceneCounter{position:absolute;right:70px;top:30px;font-size:10px;color:rgba(255,255,255,0.45)}
+  #brandmark{position:absolute;left:70px;bottom:34px;font-size:11px;color:rgba(255,255,255,0.4)}
+  #sound{
+    position:absolute;right:26px;bottom:26px;pointer-events:auto;cursor:pointer;
+    font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.15em;
+    font-size:10px;color:rgba(255,255,255,0.6);
+    background:rgba(0,0,0,0.45);border:2px solid rgba(255,255,255,0.13);
+    padding:9px 14px;transition:color .3s,border-color .3s}
+  #sound.on{color:#e8ff1e;border-color:#e8ff1e}
+  #pbar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,0.06)}
+  #pfill{position:absolute;left:0;top:0;bottom:0;width:0;background:#e8ff1e}
+  .tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,0.85)}
+</style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="water" width="1280" height="720"></canvas>
+
+    <!-- SCENE 1 : TITLE -->
+    <div class="overlay" id="s1">
+      <div class="mono kicker">Solana Liquidity Game</div>
+      <div class="hd wordmark">PUDL<span class="acc">.</span></div>
+      <div class="hd tagline">Be the House<span class="acc">.</span></div>
+      <div class="mono subline">Provide liquidity to memecoin rivers. Collect the real fees.</div>
+    </div>
+
+    <!-- SCENE 2 : RIVERS ARE POOLS -->
+    <div class="overlay" id="s2">
+      <div class="corner-head">
+        <div class="mono eyebrow">Rivers = Live Pools</div>
+        <div class="hd title">Rivers are pools<span class="acc">.</span></div>
+        <div class="body desc">Each river is a live memecoin trading pool. A wider river means more volume flowing through it.</div>
+      </div>
+      <div class="mono river-tag acc" style="right:120px;top:498px;text-align:center;color:#e8ff1e">
+        Wider = More Volume
+        <div class="rule" style="height:44px;background:#e8ff1e"></div>
+      </div>
+    </div>
+
+    <!-- SCENE 3 : CAST A NET -->
+    <div class="overlay" id="s3">
+      <div class="corner-head">
+        <div class="mono eyebrow">Cast a Net</div>
+        <div class="hd title">Cast a net<span class="acc">.</span></div>
+        <div class="body desc">You earn the trading fees while price stays in your range.</div>
+      </div>
+      <div id="counter">
+        <div class="mono lab">Illustrative Fees Accrued</div>
+        <div class="val" id="feeval">0.000 SOL</div>
+        <div class="mono foot">Illustrative — not a real figure</div>
+      </div>
+    </div>
+
+    <!-- SCENE 4 : CONFLUENCES -->
+    <div class="overlay" id="s4">
+      <div class="corner-head">
+        <div class="mono eyebrow">Confluences = Mixing</div>
+        <div class="hd title">Confluences = mixing<span class="acc">.</span></div>
+        <div class="body desc">Tributaries merge at a confluence. Mix rivers to spread your risk across pools.</div>
+      </div>
+    </div>
+
+    <!-- SCENE 5 : FLYWHEEL -->
+    <div class="overlay" id="s5">
+      <div class="corner-head">
+        <div class="mono eyebrow">The Flywheel</div>
+        <div class="hd title">Fees flow downhill<span class="acc">.</span></div>
+        <div class="body desc">Fees pay LPs, LPs deepen liquidity, depth pulls volume — and volume makes more fees.</div>
+      </div>
+    </div>
+
+    <!-- SCENE 5 : OUTRO CARD -->
+    <div id="s5outro">
+      <div class="hd wordmark" style="font-size:150px">PUDL<span class="acc">.</span></div>
+      <div class="hd tagline" style="font-size:40px">Be the House<span class="acc">.</span></div>
+      <div class="mono subline" style="margin-top:24px;letter-spacing:0.2em">Cast a net. Collect the fees. On Solana.</div>
+    </div>
+
+    <!-- HUD -->
+    <div class="mono" id="sceneCounter">01 / 05</div>
+    <div class="mono" id="brandmark">PUDL — Be the House.</div>
+    <button id="sound" class="mono">&#9834; Click for sound</button>
+    <div id="pbar"><div id="pfill"></div></div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- constants ----------
+  var W = 1280, H = 720;
+  var C = { acid:'#e8ff1e' };
+  var PAL = {
+    teal:   { shallow:'#3f92a8', deep:'#0f3446', foam:'#d3e7ea' },
+    yellow: { shallow:'#9fb015', deep:'#e8ff1e', foam:'#f6ffb2' }
+  };
+  var SCENES = [6.5, 8, 9, 7.5, 9];           // seconds
+  var NAMES  = ['TITLE','RIVERS','THE NET','CONFLUENCE','FLYWHEEL'];
+  var T = SCENES.reduce(function(a,b){return a+b;}, 0);
+  var TR = 0.28;                               // transition dip seconds
+
+  // ---------- dom ----------
+  var stage = document.getElementById('stage');
+  var CV = document.getElementById('water');
+  var ctx = CV.getContext('2d');
+  var OV = ['s1','s2','s3','s4','s5'].map(function(id){return document.getElementById(id);});
+  var s5 = document.getElementById('s5');
+  var s5outro = document.getElementById('s5outro');
+  var feeval = document.getElementById('feeval');
+  var pfill = document.getElementById('pfill');
+  var pbar = document.getElementById('pbar');
+  var sceneCounter = document.getElementById('sceneCounter');
+  var soundBtn = document.getElementById('sound');
+
+  // progress-bar scene ticks
+  (function(){
+    var acc = 0;
+    for (var i=0; i<SCENES.length-1; i++){
+      acc += SCENES[i];
+      var t = document.createElement('div');
+      t.className = 'tick';
+      t.style.left = (acc/T*100) + '%';
+      pbar.appendChild(t);
+    }
+  })();
+
+  // ---------- sizing ----------
+  var DPR = Math.min(2, window.devicePixelRatio || 1);
+  function sizeCanvas(){
+    CV.width  = Math.round(W*DPR);
+    CV.height = Math.round(H*DPR);
+    CV.style.width  = W+'px';
+    CV.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  function fit(){
+    var s = Math.min(window.innerWidth/W, window.innerHeight/H);
+    stage.style.transform = 'translate(-50%,-50%) scale('+s+')';
+  }
+  window.addEventListener('resize', fit);
+  sizeCanvas();
+  fit();
+
+  // ---------- math helpers ----------
+  function clamp(a,b,x){ return Math.max(a, Math.min(b, x)); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function smooth(x){ x = clamp(0,1,x); return x*x*(3-2*x); }
+  function easeOut(x){ x = clamp(0,1,x); return 1 - Math.pow(1-x, 3); }
+  function h2r(h){ h = h.replace('#',''); return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)]; }
+  function mixHex(a,b,t){ var A=h2r(a), B=h2r(b); return 'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')'; }
+  function hexA(h,a){ var R=h2r(h); return 'rgba('+R[0]+','+R[1]+','+R[2]+','+a+')'; }
+
+  // ---------- river geometry ----------
+  function makeCenterline(x0,x1,baseY,amp,freq,phase,width){
+    var pts = [], step = 6;
+    for (var x=x0; x<=x1; x+=step){
+      var y = baseY + amp*Math.sin(freq*x+phase) + amp*0.35*Math.sin(freq*1.9*x + phase*1.3);
+      pts.push({x:x, y:y, w:width});
+    }
+    return pts;
+  }
+  function edges(pts, scaleW){
+    var top=[], bot=[];
+    for (var i=0;i<pts.length;i++){
+      var p = pts[i];
+      var a = pts[Math.max(0,i-1)], b = pts[Math.min(pts.length-1,i+1)];
+      var tx=b.x-a.x, ty=b.y-a.y, L=Math.hypot(tx,ty)||1; tx/=L; ty/=L;
+      var nx=-ty, ny=tx, hw=p.w*0.5*scaleW;
+      top.push({x:p.x+nx*hw, y:p.y+ny*hw});
+      bot.push({x:p.x-nx*hw, y:p.y-ny*hw});
+    }
+    return {top:top, bot:bot};
+  }
+  function fillBand(pts, scaleW, style){
+    var e = edges(pts, scaleW);
+    ctx.beginPath();
+    ctx.moveTo(e.top[0].x, e.top[0].y);
+    for (var i=1;i<e.top.length;i++) ctx.lineTo(e.top[i].x, e.top[i].y);
+    for (var j=e.bot.length-1;j>=0;j--) ctx.lineTo(e.bot[j].x, e.bot[j].y);
+    ctx.closePath();
+    ctx.fillStyle = style;
+    ctx.fill();
+  }
+  function drawRiver(pts, pal, time, opts){
+    opts = opts || {};
+    fillBand(pts, 1.0, pal.shallow);
+    fillBand(pts, 0.55, pal.deep);
+    var mid = pts[Math.floor(pts.length/2)];
+    var n = opts.foam || Math.max(10, Math.round(mid.w*0.8));
+    var sp = opts.speed || 0.05;
+    for (var k=0;k<n;k++){
+      var u = ((k/n) + time*sp) % 1;
+      var idx = Math.min(pts.length-2, Math.max(0, Math.floor(u*(pts.length-1))));
+      var p = pts[idx], q = pts[idx+1];
+      var tx=q.x-p.x, ty=q.y-p.y, L=Math.hypot(tx,ty)||1; tx/=L; ty/=L;
+      var nx=-ty, ny=tx;
+      var off = Math.sin(k*12.9 + time*1.1)*0.5*p.w*0.55;
+      var cx = p.x + nx*off, cy = p.y + ny*off;
+      var len = 8 + (k%3)*5;
+      var al = 0.18 + 0.35*Math.abs(Math.sin(k*3.1 + time*1.3));
+      ctx.strokeStyle = hexA(pal.foam, al.toFixed(3));
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(cx - tx*len*0.5, cy - ty*len*0.5);
+      ctx.lineTo(cx + tx*len*0.5, cy + ty*len*0.5);
+      ctx.stroke();
+    }
+  }
+
+  // ---------- canvas text helpers ----------
+  function setMono(size){
+    ctx.font = size + "px 'Space Mono', ui-monospace, monospace";
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '1.5px';
+  }
+  function resetText(){
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  }
+
+  // ---------- net marker ----------
+  function drawNet(cx, cy, size){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.PI/4);
+    ctx.strokeStyle = C.acid;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-size/2, -size/2, size, size);
+    ctx.strokeStyle = 'rgba(232,255,30,0.65)';
+    ctx.lineWidth = 1;
+    for (var i=1;i<4;i++){
+      var o = -size/2 + i*size/4;
+      ctx.beginPath(); ctx.moveTo(o, -size/2); ctx.lineTo(o, size/2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-size/2, o); ctx.lineTo(size/2, o); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawArrow(x,y,tx,ty,color){
+    var nx=-ty, ny=tx, s=6;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x - tx*s + nx*s*0.7, y - ty*s + ny*s*0.7);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x - tx*s - nx*s*0.7, y - ty*s - ny*s*0.7);
+    ctx.stroke();
+  }
+
+  // ---------- scenes ----------
+  function drawScene1(time, st){
+    ctx.save(); ctx.globalAlpha = 0.26;
+    drawRiver(makeCenterline(-30,1310,602,34,0.006, time*0.28, 120), PAL.teal, time, {speed:0.04});
+    ctx.restore();
+    ctx.save(); ctx.globalAlpha = 0.12;
+    drawRiver(makeCenterline(-30,1310,132,20,0.009, time*0.2+2, 58), PAL.teal, time, {speed:0.05});
+    ctx.restore();
+  }
+
+  function drawScene2(time, st){
+    drawRiver(makeCenterline(-30,1310,240,22,0.011, time*0.6,       16), PAL.teal, time, {speed:0.06});
+    drawRiver(makeCenterline(-30,1310,405,30,0.008, time*0.5 + 1.5, 36), PAL.teal, time, {speed:0.05});
+    drawRiver(makeCenterline(-30,1310,575,40,0.006, time*0.4 + 3,   72), PAL.teal, time, {speed:0.045});
+  }
+
+  function y3(x, phase){
+    return 360 + 30*Math.sin(0.009*x + phase) + 30*0.35*Math.sin(0.009*1.9*x + phase*1.3);
+  }
+  function drawScene3(time, st){
+    var phase = time*0.5;
+    var mix = clamp(0,1,(st-1.0)/0.7);
+    var pal = {
+      shallow: mixHex(PAL.teal.shallow, PAL.yellow.shallow, mix),
+      deep:    mixHex(PAL.teal.deep,    PAL.yellow.deep,    mix),
+      foam:    mixHex(PAL.teal.foam,    PAL.yellow.foam,    mix)
+    };
+    drawRiver(makeCenterline(-30,1310,360,30,0.009, phase, 54), pal, time, {speed:0.06});
+
+    var netX = 680;
+    var targetY = y3(netX, phase);
+    var drop = easeOut(clamp(0,1, st/0.9));
+    var bob = st > 0.9 ? Math.sin((st-0.9)*7)*4*Math.exp(-(st-0.9)*2) : 0;
+    var netY = lerp(-70, targetY, drop) + bob;
+
+    // cast line
+    ctx.strokeStyle = 'rgba(232,255,30,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,5]);
+    ctx.beginPath(); ctx.moveTo(netX, -10); ctx.lineTo(netX, netY-24); ctx.stroke();
+    ctx.setLineDash([]);
+
+    drawNet(netX, netY, 48);
+
+    // landing ripple
+    if (st > 0.9){
+      var r = (st-0.9)*120;
+      var a = clamp(0,1, 1-(st-0.9)/1.2);
+      ctx.strokeStyle = hexA('#e8ff1e', (a*0.5).toFixed(3));
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(netX, targetY, r, r*0.4, 0, 0, Math.PI*2);
+      ctx.stroke();
+    }
+  }
+
+  function drawScene4(time, st){
+    var ph = time*0.5;
+    var trunk = [], i, t, x, y, w;
+    for (i=0;i<=160;i++){ t=i/160; x=690+t*640; y=360+Math.sin(t*5+ph)*7; w=lerp(48,60,t); trunk.push({x:x,y:y,w:w}); }
+    var trA=[], trB=[];
+    for (i=0;i<=140;i++){
+      t=i/140; x=-30+t*760;
+      var yA = lerp(130,360, smooth(t)) + Math.sin(t*6+ph)*10*(1-t);
+      var yB = lerp(600,360, smooth(t)) + Math.sin(t*6+ph+2)*10*(1-t);
+      trA.push({x:x, y:yA, w:lerp(24,30,t)});
+      trB.push({x:x, y:yB, w:lerp(24,30,t)});
+    }
+    drawRiver(trunk, PAL.teal,   time, {speed:0.05});
+    drawRiver(trB,   PAL.teal,   time, {speed:0.06});
+    drawRiver(trA,   PAL.yellow, time, {speed:0.06});   // player's tributary = acid yellow
+
+    // yellow liquidity mixing into the trunk, fading downstream
+    for (var k=0;k<26;k++){
+      var u = ((k/26) + time*0.05) % 1;
+      var idx = Math.floor(u*(trunk.length-1));
+      var p = trunk[idx];
+      var fade = clamp(0,1, 1 - u*2.2);
+      if (fade <= 0) continue;
+      var off = Math.sin(k*7.3)*0.5*p.w*0.6;
+      ctx.fillStyle = hexA('#e8ff1e', (fade*0.5).toFixed(3));
+      ctx.beginPath(); ctx.arc(p.x, p.y+off, 2.2, 0, Math.PI*2); ctx.fill();
+    }
+    // confluence foam burst
+    for (var m=0;m<24;m++){
+      var rr = ((time*30 + m*17) % 60);
+      var ang = m*0.7 + time*0.4;
+      var fx = 690 + Math.cos(ang)*rr*0.9;
+      var fy = 360 + Math.sin(ang)*rr*0.4;
+      var al = clamp(0,1, 1 - rr/60)*0.5;
+      ctx.fillStyle = hexA('#d3e7ea', al.toFixed(3));
+      ctx.beginPath(); ctx.arc(fx, fy, 1.6, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  function drawScene5(time, st, dur){
+    var outroK = clamp(0,1,(st - dur*0.66)/1.2);
+    ctx.save();
+    ctx.globalAlpha = 1 - outroK;
+
+    var cx=640, cy=372, R=168;
+    // ring
+    ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3,7]);
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // direction chevrons (clockwise)
+    for (var k=0;k<8;k++){
+      var a = k/8*Math.PI*2;
+      var x = cx + Math.cos(a)*R, y = cy + Math.sin(a)*R;
+      drawArrow(x, y, -Math.sin(a), Math.cos(a), 'rgba(255,255,255,0.28)');
+    }
+
+    // nodes
+    var nodes = [
+      {a:-Math.PI/2, l:'Real fees',       pos:0},
+      {a:0,          l:'Paid to LPs',     pos:1},
+      {a:Math.PI/2,  l:'Deeper liquidity',pos:2},
+      {a:Math.PI,    l:'More volume',     pos:3}
+    ];
+    setMono(13);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    for (var n=0;n<nodes.length;n++){
+      var nd = nodes[n];
+      var nx = cx + Math.cos(nd.a)*R, ny = cy + Math.sin(nd.a)*R;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(nx-7, ny-7, 14, 14);
+      ctx.strokeStyle = C.acid; ctx.lineWidth = 2;
+      ctx.strokeRect(nx-7, ny-7, 14, 14);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      var lab = nd.l.toUpperCase();
+      if (nd.pos===0){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(lab, nx, ny-16); }
+      else if (nd.pos===1){ ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(lab, nx+18, ny); }
+      else if (nd.pos===2){ ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(lab, nx, ny+18); }
+      else { ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText(lab, nx-18, ny); }
+    }
+
+    // travelling dot (clockwise from top)
+    var ang = time*0.9 - Math.PI/2;
+    var dx = cx + Math.cos(ang)*R, dy = cy + Math.sin(ang)*R;
+    ctx.fillStyle = C.acid;
+    ctx.beginPath(); ctx.arc(dx, dy, 6, 0, Math.PI*2); ctx.fill();
+
+    // center label
+    setMono(12);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('THE FLYWHEEL', cx, cy);
+
+    resetText();
+    ctx.restore();
+  }
+
+  // ---------- overlays / hud ----------
+  function updateOverlays(sc, dip){
+    var base = 1 - dip;
+    for (var i=0;i<OV.length;i++){
+      OV[i].style.display = (i===sc.i) ? 'block' : 'none';
+    }
+    if (sc.i === 4){
+      var outroK = clamp(0,1,(sc.st - sc.dur*0.66)/1.2);
+      s5.style.opacity = (base*(1-outroK)).toFixed(3);
+      s5outro.style.display = 'flex';
+      s5outro.style.opacity = (base*outroK).toFixed(3);
+    } else {
+      s5outro.style.display = 'none';
+      s5outro.style.opacity = 0;
+      OV[sc.i].style.opacity = base.toFixed(3);
+    }
+    if (sc.i === 2){
+      var v = 0;
+      if (sc.st > 1.0) v = 0.00072*(sc.st-1.0) + 0.00003*Math.sin(sc.st*6);
+      feeval.textContent = v.toFixed(3) + ' SOL';
+    }
+  }
+
+  function updateHud(loopT, sc){
+    pfill.style.width = (loopT/T*100).toFixed(2) + '%';
+    sceneCounter.textContent = '0'+(sc.i+1)+' / 05  —  '+NAMES[sc.i];
+  }
+
+  // ---------- timeline ----------
+  function sceneAt(loopT){
+    var acc = 0;
+    for (var i=0;i<SCENES.length;i++){
+      if (loopT < acc + SCENES[i]) return {i:i, st:loopT-acc, dur:SCENES[i]};
+      acc += SCENES[i];
+    }
+    var last = SCENES.length-1;
+    return {i:last, st:SCENES[last], dur:SCENES[last]};
+  }
+
+  var start = performance.now();
+  function frame(nowMs){
+    var elapsed = (nowMs - start)/1000;
+    var loopT = elapsed % T;
+    var sc = sceneAt(loopT);
+    var time = nowMs/1000;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,W,H);
+
+    if      (sc.i===0) drawScene1(time, sc.st);
+    else if (sc.i===1) drawScene2(time, sc.st);
+    else if (sc.i===2) drawScene3(time, sc.st);
+    else if (sc.i===3) drawScene4(time, sc.st);
+    else               drawScene5(time, sc.st, sc.dur);
+
+    // transition dip to black
+    var dip = 0;
+    if (sc.st < TR) dip = 1 - sc.st/TR;
+    else if (sc.st > sc.dur - TR) dip = 1 - (sc.dur - sc.st)/TR;
+    if (dip > 0){
+      ctx.fillStyle = 'rgba(0,0,0,'+dip.toFixed(3)+')';
+      ctx.fillRect(0,0,W,H);
+    }
+
+    updateOverlays(sc, dip);
+    updateHud(loopT, sc);
+
+    requestAnimationFrame(frame);
+  }
+
+  // start once fonts are ready for crisp first frames, but never block forever
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){}).catch(function(){});
+  }
+  requestAnimationFrame(frame);
+
+  // ---------- ambient audio ----------
+  var audio = null, audioOn = false;
+  function initAudio(){
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    var ac = new AC();
+    var master = ac.createGain(); master.gain.value = 0; master.connect(ac.destination);
+
+    // low pad
+    var padGain = ac.createGain(); padGain.gain.value = 0.06;
+    var lp = ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 420;
+    padGain.connect(lp); lp.connect(master);
+    var o1 = ac.createOscillator(); o1.type='sine';     o1.frequency.value = 55;
+    var o2 = ac.createOscillator(); o2.type='sine';     o2.frequency.value = 82.4;
+    var o3 = ac.createOscillator(); o3.type='triangle'; o3.frequency.value = 110;
+    var o3g = ac.createGain(); o3g.gain.value = 0.4; o3.connect(o3g); o3g.connect(padGain);
+    o1.connect(padGain); o2.connect(padGain);
+    var lfo = ac.createOscillator(); lfo.frequency.value = 0.05;
+    var lfog = ac.createGain(); lfog.gain.value = 120; lfo.connect(lfog); lfog.connect(lp.frequency);
+
+    // water-like filtered noise
+    var bufSize = Math.floor(ac.sampleRate*2);
+    var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i=0;i<bufSize;i++) d[i] = Math.random()*2-1;
+    var noise = ac.createBufferSource(); noise.buffer = buf; noise.loop = true;
+    var bp = ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 800; bp.Q.value = 0.7;
+    var nGain = ac.createGain(); nGain.gain.value = 0.05;
+    noise.connect(bp); bp.connect(nGain); nGain.connect(master);
+    var nlfo = ac.createOscillator(); nlfo.frequency.value = 0.08;
+    var nlfog = ac.createGain(); nlfog.gain.value = 300; nlfo.connect(nlfog); nlfog.connect(bp.frequency);
+
+    o1.start(); o2.start(); o3.start(); lfo.start(); nlfo.start(); noise.start();
+    audio = { ac:ac, master:master };
+  }
+  function toggleSound(){
+    if (!audio) initAudio();
+    if (!audio) return;
+    if (audio.ac.state === 'suspended') audio.ac.resume();
+    audioOn = !audioOn;
+    var now = audio.ac.currentTime;
+    audio.master.gain.cancelScheduledValues(now);
+    audio.master.gain.setValueAtTime(audio.master.gain.value, now);
+    audio.master.gain.linearRampToValueAtTime(audioOn ? 0.14 : 0.0, now + 0.5);
+    soundBtn.className = 'mono' + (audioOn ? ' on' : '');
+    soundBtn.innerHTML = (audioOn ? '&#9834; Sound on' : '&#9834; Click for sound');
+  }
+  soundBtn.addEventListener('click', toggleSound);
+
+})();
+</script>
+</body>
+</html>

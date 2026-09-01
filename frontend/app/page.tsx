@@ -127,6 +127,45 @@ export default function Home() {
           </div>
         </section>
 
+        {/* --------------------------------------------------------------- the flywheel */}
+        <section className="border-t border-dash">
+          <div className="px-5 md:px-9 pt-11">
+            <div className="esub mb-4">The $PUDL flywheel</div>
+            <h2 className="display text-3xl md:text-[40px]">Fees flow downhill.</h2>
+            <p className="mt-4 max-w-2xl text-white/55 text-[15px] leading-relaxed">
+              Every trade pays a fee. PUDL routes that fee back into the rivers instead of into
+              someone&rsquo;s pocket &mdash; so providing liquidity pays the people who show up, and the
+              whole thing compounds.
+            </p>
+          </div>
+          <div className="mt-9 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-line border-t border-line">
+            <Flow n="01" k="Creator fees to the river">
+              A token launched through PUDL pledges its creator fees as a <b>boost streamed to its LPs</b>.
+              Deep liquidity is what makes a launch survive &mdash; so creators buy it instead of pocketing cash.
+            </Flow>
+            <Flow n="02" k="Liquidity gets deeper">
+              Real yield pulls in more nets. More liquidity means tighter spreads and more volume &mdash;
+              <b> more fees for everyone casting there.</b>
+            </Flow>
+            <Flow n="03" k="Protocol cut to $PUDL">
+              PUDL takes a small cut of the flow to <b>buy back &amp; burn $PUDL</b> and flood the $PUDL
+              flagship river &mdash; the one that pays the most.
+            </Flow>
+            <Flow n="04" k="The loop tightens">
+              Best yields, more LPs, more volume, bigger boosts &amp; a bigger burn &mdash; $PUDL worth more
+              and paying most, so <b>more people want in.</b>
+            </Flow>
+          </div>
+          <div className="px-5 md:px-9 py-7 border-t border-line">
+            <p className="max-w-2xl text-white/45 text-[13px] leading-relaxed">
+              <span className="text-acid eyebrow">Honest by design.</span>{' '}
+              You earn by <span className="text-white">providing liquidity</span>, never by passively holding
+              $PUDL. The flagship river and creator boosts light up <span className="text-white">when the token
+              launches</span> &mdash; no fake yields until then, and every number on this site is real on-chain fees.
+            </p>
+          </div>
+        </section>
+
         {/* --------------------------------------------------------------- live rivers */}
         {top.length > 0 && (
           <section className="border-t border-dash">
@@ -174,6 +213,18 @@ export default function Home() {
           <span className="eyebrow text-white/35">Be the house · Solana · real fees only</span>
         </footer>
       </div>
+    </div>
+  )
+}
+
+function Flow({ n, k, children }: { n: string; k: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-surface p-7">
+      <div className="flex items-center gap-2 mb-2.5">
+        <span className="mono text-[11px] text-acid tnum">{n}</span>
+        <span className="eyebrow text-white/70">{k}</span>
+      </div>
+      <p className="text-white/55 text-[14px] leading-relaxed [&>b]:text-white [&>b]:font-semibold">{children}</p>
     </div>
   )
 }
