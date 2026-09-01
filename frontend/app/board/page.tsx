@@ -37,10 +37,10 @@ export default function BoardPage() {
               <div
                 key={r.sub}
                 className={`flex items-center gap-4 rounded-xl border px-4 py-3 ${
-                  i === 0 ? 'border-gold/40 bg-gold/5' : 'border-white/5 bg-deep/50'
+                  i === 0 ? 'border-acid/40 bg-acid/[0.09]' : 'border-white/5 bg-deep/50'
                 }`}
               >
-                <div className={`w-6 text-center font-mono font-bold ${i < 3 ? 'text-gold' : 'text-gray-600'}`}>
+                <div className={`w-6 text-center font-mono font-bold ${i < 3 ? "text-acid" : 'text-gray-600'}`}>
                   {i + 1}
                 </div>
                 {r.picture ? (

@@ -46,7 +46,7 @@ function Win({ title, accent, initial, width, onClose, children, z, onFocus }: {
           <span className="w-1.5 h-1.5" style={{ background: accent || '#e8ff1e' }} />
           <span className="eyebrow text-white/60">{title}</span>
         </div>
-        <button onClick={onClose} className="text-white/40 hover:text-white text-sm leading-none px-1">×</button>
+        <button onClick={onClose} aria-label="Close panel" className="text-white/40 hover:text-white text-sm leading-none px-1">×</button>
       </div>
       <div className="max-h-[64vh] overflow-y-auto">{children}</div>
     </div>
@@ -192,7 +192,7 @@ function ActivityFeed({ rivers }: { rivers: River[] }) {
     const tick = () => {
       const r = rivers[Math.floor(Math.random() * Math.min(rivers.length, 12))]
       if (!r) return
-      setLines((prev) => [{ id: id++, text: `${r.flow === 'FLASH FLOOD' ? '≋' : '›'} ${r.name} — ${fmtUsd(r.vol24h)} flowing`, color: r.boostPer1k > 0 ? '#ffb347' : '#e8ff1e' }, ...prev].slice(0, 40))
+      setLines((prev) => [{ id: id++, text: `${r.flow === 'FLASH FLOOD' ? '≋' : '›'} ${r.name} · ${fmtUsd(r.vol24h)} 24h vol`, color: r.boostPer1k > 0 ? '#ffb347' : '#e8ff1e' }, ...prev].slice(0, 40))
     }
     tick()
     const t = setInterval(tick, 2200)

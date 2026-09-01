@@ -149,34 +149,55 @@ interface Reach {
   owned: boolean
 }
 
-function useNetwork(rivers: River[], ownedIds: Set<string>, height: ReturnType<typeof useHeight>): Reach[] {
+function windingCurve(src: THREE.Vector3, dst: THREE.Vector3, wind: number): THREE.CatmullRomCurve3 {
+  const pts: THREE.Vector3[] = []
+  const steps = 8
+  for (let s = 0; s <= steps; s++) {
+    const t = s / steps
+    const x = src.x + (dst.x - src.x) * t
+    const z = src.z + (dst.z - src.z) * t + Math.sin(t * Math.PI * 2 + wind * 3) * (1 - t * 0.6) * 12 * wind
+    pts.push(new THREE.Vector3(x, 0, z))
+  }
+  return new THREE.CatmullRomCurve3(pts)
+}
+
+interface Network { reaches: Reach[]; confluences: THREE.Vector3[] }
+
+function useNetwork(rivers: River[], ownedIds: Set<string>, height: ReturnType<typeof useHeight>): Network {
   return useMemo(() => {
-    const top = rivers.slice(0, 18)
+    const top = rivers.slice(0, 20)
     const maxVol = Math.max(...top.map((r) => r.vol24h), 1)
     let seed = 1337
     const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff }
 
-    // spread river mouths evenly along the sea edge so they don't converge into
-    // one delta; each source sits back in the uplands at a varied distance
-    const order = top.map((_, i) => i).sort(() => rnd() - 0.5)
+    // each river: a source scattered across the uplands (+X) + a winding path
+    const items = top.map((river) => ({
+      river,
+      src: new THREE.Vector3(W * 0.02 + rnd() * W * 0.44, 0, (rnd() - 0.5) * W * 0.9),
+      wind: (rnd() - 0.5) * 2,
+      curve: null as THREE.CatmullRomCurve3 | null,
+    }))
+    // biggest rivers are TRUNKS that reach the sea; the rest are TRIBUTARIES that
+    // join a trunk — a confluence is exactly where you'd mix two pools' liquidity.
+    const byVol = [...items].sort((a, b) => b.river.vol24h - a.river.vol24h)
+    const T = Math.max(5, Math.round(items.length * 0.45))
+    const trunks = byVol.slice(0, T)
+    trunks.forEach((it, k) => {
+      const mouthZ = (k / Math.max(T - 1, 1) - 0.5) * W * 0.82
+      it.curve = windingCurve(it.src, new THREE.Vector3(-W * 0.48, 0, mouthZ + (rnd() - 0.5) * 8), it.wind)
+    })
+    const confluences: THREE.Vector3[] = []
+    byVol.slice(T).forEach((it) => {
+      let best = trunks[0], bd = Infinity
+      for (const tr of trunks) { const d = it.src.distanceToSquared(tr.src); if (d < bd) { bd = d; best = tr } }
+      const j = best.curve!.getPoint(0.45 + rnd() * 0.3)
+      it.curve = windingCurve(it.src, j, it.wind)
+      confluences.push(new THREE.Vector3(j.x, height.heightAt(j.x, j.z), j.z))
+    })
 
-    return top.map((river, i) => {
-      const slot = order.indexOf(i)
-      const mouthZ = (slot / (top.length - 1) - 0.5) * (W * 0.86)
-      const mouth = new THREE.Vector3(-W * 0.48, 0, mouthZ + (rnd() - 0.5) * 6)
-      // source back in the uplands, varied reach length + lateral offset
-      const reach = 0.55 + rnd() * 0.4
-      const src = new THREE.Vector3(-W * 0.48 + W * reach, 0, mouthZ + (rnd() - 0.5) * W * 0.28)
-      const pts: THREE.Vector3[] = []
-      const steps = 8
-      const wind = (rnd() - 0.5) * 2
-      for (let s = 0; s <= steps; s++) {
-        const t = s / steps
-        const x = src.x + (mouth.x - src.x) * t
-        const z = src.z + (mouth.z - src.z) * t + Math.sin(t * Math.PI * 2 + wind * 3) * (1 - t * 0.6) * 12 * wind
-        pts.push(new THREE.Vector3(x, 0, z))
-      }
-      const curve = new THREE.CatmullRomCurve3(pts)
+    const reaches: Reach[] = items.map((it) => {
+      const river = it.river
+      const curve = it.curve!
       // ribbon
       const width = 1.1 + Math.sqrt(river.vol24h / maxVol) * 6.5
       const div = 60
@@ -211,7 +232,22 @@ function useNetwork(rivers: River[], ownedIds: Set<string>, height: ReturnType<t
       home.y = height.heightAt(home.x, home.z)
       return { river, curve, geo, home, owned: ownedIds.has(river.id) }
     })
+    return { reaches, confluences }
   }, [rivers, ownedIds, height])
+}
+
+// small dark pools where tributaries meet a trunk — the confluences you mix at
+function Confluences({ points }: { points: THREE.Vector3[] }) {
+  return (
+    <group>
+      {points.map((p, i) => (
+        <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} position={[p.x, p.y + 0.14, p.z]}>
+          <circleGeometry args={[2.4, 20]} />
+          <meshBasicMaterial color={C.DEEP} transparent opacity={0.85} depthWrite={false} />
+        </mesh>
+      ))}
+    </group>
+  )
 }
 
 function waterMaterial() {
@@ -423,7 +459,7 @@ function Scene({ rivers, nets, onCast }: { rivers: River[]; nets: MyNet[]; onCas
   const [sel, setSel] = useState<{ r: River; x: number; y: number; z: number } | null>(null)
 
   const onSelect = (r: River, hover: boolean) => {
-    const rc = network.find((n) => n.river.id === r.id)
+    const rc = network.reaches.find((n) => n.river.id === r.id)
     const p = rc ? rc.curve.getPoint(0.4) : new THREE.Vector3()
     setSel({ r, x: p.x, y: height.heightAt(p.x, p.z) + 2, z: p.z })
     if (!hover) onCast(r)
@@ -453,8 +489,9 @@ function Scene({ rivers, nets, onCast }: { rivers: River[]; nets: MyNet[]; onCas
       <Sea />
       <Grass height={height} />
       <Trees height={height} />
-      <Rivers network={network} selected={sel?.r.id ?? null} onSelect={onSelect} />
-      <Homes network={network} />
+      <Confluences points={network.confluences} />
+      <Rivers network={network.reaches} selected={sel?.r.id ?? null} onSelect={onSelect} />
+      <Homes network={network.reaches} />
 
       {sel && (
         <Html position={[sel.x, sel.y, sel.z]} center style={{ pointerEvents: 'none' }} distanceFactor={90} zIndexRange={[8, 0]}>

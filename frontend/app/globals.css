@@ -9,6 +9,11 @@
   body {
     @apply bg-ink text-white antialiased;
   }
+  /* visible keyboard focus (inputs strip the default outline) */
+  :focus-visible {
+    outline: 2px solid #e8ff1e;
+    outline-offset: 1px;
+  }
   /* editorial display — Archivo Black, UPPERCASE, hard tracking (Elegans) */
   .display {
     font-family: var(--font-display), Impact, sans-serif;
