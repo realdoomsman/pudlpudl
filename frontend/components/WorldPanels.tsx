@@ -97,6 +97,7 @@ export function WorldPanels({ rivers, nets, signedIn, onCast, onNetsChanged }: {
                   </div>
                   <span className="text-xs font-semibold truncate flex-1">{r.name}</span>
                   {r.venue === 'meteora' && <span className="text-[7px] font-bold px-1 mono" style={{ color: '#5ad1ff', border: '1px solid rgba(90,209,255,.4)' }}>MET</span>}
+                  {r.venue === 'pumpswap' && <span className="text-[7px] font-bold px-1 mono" style={{ color: '#ffb347', border: '1px solid rgba(255,179,71,.4)' }}>PUMP</span>}
                   {boosted && <span className="text-[7px] font-bold px-1 text-acidink" style={{ background: '#ffb347' }}>B</span>}
                   <span className="mono text-[11px] font-bold tnum" style={{ color: boosted ? '#ffb347' : '#e8ff1e' }}>{fmtUsd(r.totalPer1k)}<span className="text-white/30">/1k</span></span>
                 </button>

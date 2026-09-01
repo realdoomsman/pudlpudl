@@ -158,6 +158,40 @@ function mapMeteora(p: any): River {
   }
 }
 
+// a pump.fun / PumpSwap pool from DexScreener -> River. DexScreener gives real
+// volume + liquidity; PumpSwap's LP fee is a known ~0.25%, so LP fee revenue =
+// volume × 0.25% is a real figure (same way any pool's fees are computed).
+const PUMPSWAP_LP_FEE = 0.0025
+function mapDexPumpswap(p: any): River {
+  const symbolA = p.baseToken?.symbol || '?'
+  const symbolB = p.quoteToken?.symbol || '?'
+  const tvl = Number(p.liquidity?.usd) || 0
+  const vol24h = Number(p.volume?.h24) || 0
+  const fees24h = vol24h * PUMPSWAP_LP_FEE
+  const feesPer1k = tvl > 0 ? (fees24h / tvl) * 1000 : 0
+  const id = 'pump:' + String(p.pairAddress)
+  const meme =
+    !(isMajor(symbolA) && isMajor(symbolB)) &&
+    !(symbolA === 'WSOL' && isMajor(symbolB)) &&
+    !(isMajor(symbolA) && symbolB === 'WSOL')
+  return {
+    id,
+    name: `${symbolA}/${symbolB}`,
+    symbolA, symbolB,
+    logoA: p.info?.imageUrl || null,
+    logoB: null,
+    mintA: p.baseToken?.address || '',
+    mintB: p.quoteToken?.address || '',
+    price: Number(p.priceUsd) || 0,
+    feeRatePct: PUMPSWAP_LP_FEE * 100,
+    tvl, vol24h, fees24h, feesPer1k, boostPerDay: 0, boostPer1k: 0,
+    totalPer1k: feesPer1k,
+    flow: classifyFlow(vol24h, tvl),
+    meme,
+    venue: 'pumpswap',
+  }
+}
+
 const METEORA_URL =
   'https://dlmm.datapi.meteora.ag/pools?page=1&page_size=80&sort_by=volume_24h:desc&filter_by=tvl>2000;is_blacklisted=false'
 
@@ -275,7 +309,12 @@ app.get('/search', async (req, res) => {
       'https://api-v3.raydium.io/pools/info/mint' +
       `?mint1=${mint}&poolType=all&poolSortField=liquidity&sortType=desc&pageSize=16&page=1`
     const metUrl = `https://dlmm.datapi.meteora.ag/pools?query=${mint}&page_size=16&sort_by=volume_24h:desc`
-    const [r, mr] = await Promise.all([fetch(url), fetch(metUrl).catch(() => null)])
+    const dexUrl = `https://api.dexscreener.com/token-pairs/v1/solana/${mint}`
+    const [r, mr, dr] = await Promise.all([
+      fetch(url),
+      fetch(metUrl).catch(() => null),
+      fetch(dexUrl).catch(() => null),
+    ])
     if (!r.ok) throw new Error(`raydium ${r.status}`)
     const json: any = await r.json()
     const raw: any[] = json?.data?.data ?? json?.data ?? []
@@ -288,10 +327,21 @@ app.get('/search', async (req, res) => {
           .filter((x: River) => x.tvl > 0 && (x.mintA === mint || x.mintB === mint))
       }
     } catch {}
+    let pumpRivers: River[] = []
+    try {
+      if (dr && dr.ok) {
+        const dj: any = await dr.json()
+        pumpRivers = (Array.isArray(dj) ? dj : [])
+          .filter((p: any) => /pump/i.test(p?.dexId || '')) // pump.fun / PumpSwap only
+          .map(mapDexPumpswap)
+          .filter((x: River) => x.tvl > 0 && (x.mintA === mint || x.mintB === mint))
+      }
+    } catch {}
     const rivers = raw
       .map(mapPool)
       .filter((x) => x.tvl > 0 && (x.mintA === mint || x.mintB === mint))
       .concat(metRivers)
+      .concat(pumpRivers)
       .sort((a, b) => b.totalPer1k - a.totalPer1k)
     // make them castable/known: fold any we don't already track into the snapshot
     rivers.forEach(upsertRiver)

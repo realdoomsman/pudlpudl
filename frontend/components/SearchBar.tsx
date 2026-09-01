@@ -106,6 +106,8 @@ export function SearchBar({ onCast }: { onCast: (r: River) => void }) {
                         tvl {fmtUsd(r.tvl)} · {r.feeRatePct.toFixed(2)}% fee
                       </div>
                     </div>
+                    {r.venue === 'meteora' && <span className="text-[7px] font-bold px-1 mono" style={{ color: '#5ad1ff', border: '1px solid rgba(90,209,255,.4)' }}>MET</span>}
+                    {r.venue === 'pumpswap' && <span className="text-[7px] font-bold px-1 mono" style={{ color: '#ffb347', border: '1px solid rgba(255,179,71,.4)' }}>PUMP</span>}
                     {boosted && (
                       <span className="text-[7px] font-bold px-1 text-black" style={{ background: '#ffb347' }}>B</span>
                     )}
