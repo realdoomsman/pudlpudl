@@ -156,7 +156,10 @@ function NetRow({ net, onChanged }: { net: MyNet; onChanged: () => void }) {
     <div className="border border-hair bg-sunk px-2.5 py-2">
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold truncate">{net.poolName}</div>
+          <div className="text-xs font-semibold truncate flex items-center gap-1.5">
+            <span className="truncate">{net.poolName}</span>
+            {net.bundleId && <span className="text-[7px] font-bold px-1 mono text-acidink shrink-0" style={{ background: '#e8ff1e' }}>MIX</span>}
+          </div>
           <div className="text-[10px] text-white/45">
             {fmtSol(net.amountSol)} · <span style={{ color: net.status === 'live' ? '#e8ff1e' : net.status === 'failed' ? '#ff5a7a' : undefined }}>{label}</span>
           </div>

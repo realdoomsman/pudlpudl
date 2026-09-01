@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Nav } from '@/components/Nav'
 import { CastModal } from '@/components/CastModal'
+import { MixModal } from '@/components/MixModal'
 import { WorldPanels } from '@/components/WorldPanels'
 import { SearchBar } from '@/components/SearchBar'
 import { useAuth } from '@/lib/auth'
@@ -24,6 +25,7 @@ export default function RiversPage() {
   const [snap, setSnap] = useState<RiversSnapshot | null>(null)
   const [showAll, setShowAll] = useState(false)
   const [cast, setCast] = useState<River | null>(null)
+  const [mixOpen, setMixOpen] = useState(false)
   const [nets, setNets] = useState<MyNet[]>([])
 
   useEffect(() => {
@@ -75,11 +77,17 @@ export default function RiversPage() {
           </p>
         </div>
 
-        {/* CA search — top center */}
-        <div className="pointer-events-none absolute top-3 md:top-4 left-1/2 -translate-x-1/2 z-20 flex justify-center">
+        {/* CA search + mix — top center */}
+        <div className="pointer-events-none absolute top-3 md:top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5">
           <div className="pointer-events-auto">
             <SearchBar onCast={setCast} />
           </div>
+          <button
+            onClick={() => setMixOpen(true)}
+            className="pointer-events-auto eyebrow px-3 py-1.5 border border-acid/35 bg-acid/[0.08] text-acid hover:bg-acid/[0.14] transition-colors"
+          >
+            ⋔ Mix rivers
+          </button>
         </div>
 
         {/* top-right: live stats grid (Elegans #stats) */}
@@ -135,6 +143,7 @@ export default function RiversPage() {
       </div>
 
       {cast && <CastModal river={cast} onClose={() => setCast(null)} />}
+      {mixOpen && <MixModal rivers={rivers} onClose={() => setMixOpen(false)} onDone={reloadNets} />}
     </div>
   )
 }

@@ -45,6 +45,7 @@ export interface Me {
 export interface MyNet {
   id: string
   homeId: string
+  bundleId?: string
   poolId: string
   poolName: string
   positionMint: string | null
@@ -125,6 +126,11 @@ export const pudl = {
     api<{ ok: boolean; net: MyNet }>('/nets/cast', {
       method: 'POST',
       body: JSON.stringify({ poolId, amount, bandPct }),
+    }),
+  mix: (amount: number, legs: { poolId: string; weight: number; bandPct?: number }[]) =>
+    api<{ ok: boolean; bundleId: string; nets: MyNet[] }>('/nets/mix', {
+      method: 'POST',
+      body: JSON.stringify({ amount, legs }),
     }),
   harvest: (id: string) => api<{ ok: boolean; harvestedSol?: number }>(`/nets/${id}/harvest`, { method: 'POST' }),
   close: (id: string) => api<{ ok: boolean }>(`/nets/${id}/close`, { method: 'POST' }),

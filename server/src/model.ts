@@ -95,6 +95,7 @@ export interface Net {
   id: string
   sub: string // owner account
   homeId: string // the home this net's fees flow to
+  bundleId?: string // set when this net is one leg of a mixed "confluence" cast
   poolId: string
   poolName: string
   positionMint: string | null

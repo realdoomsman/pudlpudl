@@ -419,6 +419,61 @@ app.post('/nets/cast', async (req, res) => {
   })()
 })
 
+// mix a "confluence": split SOL across 2–4 Raydium rivers as one bundle. Higher
+// variance (more coins to hold if any dumps out of range), aggregated fees.
+app.post('/nets/mix', async (req, res) => {
+  const a = auth(req)
+  if (!a) return res.status(401).json({ error: 'sign in' })
+  const { amount, legs } = req.body ?? {}
+  const amt = Number(amount)
+  if (!Number.isFinite(amt) || amt < 0.002) return res.status(400).json({ error: 'minimum mix is 0.002 SOL' })
+  if (!Array.isArray(legs) || legs.length < 2 || legs.length > 4) return res.status(400).json({ error: 'pick 2–4 rivers to mix' })
+  const resolved = legs.map((l: any) => ({
+    river: riverById(String(l?.poolId)),
+    weight: Math.max(Number(l?.weight) || 1, 0.0001),
+    band: l?.bandPct === undefined ? 0.15 : Number(l.bandPct),
+  }))
+  if (resolved.some((r) => !r.river)) return res.status(400).json({ error: 'unknown river in the mix' })
+  if (resolved.some((r) => r.river!.venue !== 'raydium')) return res.status(501).json({ error: 'only Raydium rivers can be mixed today' })
+  if (resolved.some((r) => !(r.band > 0 && r.band < 1))) return res.status(400).json({ error: 'band must be between 0 and 1' })
+  let bal = 0
+  try { bal = await balanceOf(a.pubkey) } catch {}
+  if (amt > bal - 0.003) return res.status(400).json({ error: 'not enough SOL — deposit first (keep ~0.003 for fees)' })
+
+  const home = ensureHome(a.sub, `${a.name}'s pudl`)
+  const bundleId = newId('mix')
+  const totalW = resolved.reduce((s, r) => s + r.weight, 0)
+  const created = resolved.map((r) => {
+    const legAmt = Math.round((amt * (r.weight / totalW)) * 1e6) / 1e6
+    const net: Net = {
+      id: newId('net'), sub: a.sub, homeId: home.id, bundleId,
+      poolId: r.river!.id, poolName: r.river!.name, positionMint: null,
+      amountSol: legAmt, status: 'opening', openSig: null,
+      castAt: Date.now(), closedAt: null, feesClaimedSol: 0, boostClaimedSol: 0,
+    }
+    nets.push(net)
+    return { net, river: r.river!, legAmt, band: r.band }
+  })
+  saveNets()
+  res.json({ ok: true, bundleId, nets: created.map((c) => c.net) })
+
+  // open each leg independently — a stuck leg doesn't block the others
+  for (const c of created) {
+    ;(async () => {
+      try {
+        const { positionMint, txId } = await openNet(accountKeypair(a), c.river.id, c.legAmt, c.band)
+        c.net.positionMint = positionMint
+        c.net.openSig = txId
+        c.net.status = 'live'
+      } catch (e: any) {
+        c.net.status = 'failed'
+        c.net.openSig = String(e?.message ?? e).slice(0, 140)
+      }
+      saveNets()
+    })()
+  }
+})
+
 app.post('/nets/:id/harvest', async (req, res) => {
   const a = auth(req)
   if (!a) return res.status(401).json({ error: 'sign in' })
