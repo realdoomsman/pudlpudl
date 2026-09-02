@@ -47,6 +47,7 @@ import {
   type CreatorLp,
 } from './model'
 import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, transferSolResult, splTokenBalances, createCpmmPool, withAccountLock, keypairFromSecret } from './cast'
+import { distributableFees, distributeCreatorFees, type DistributeResult } from './pumpfees'
 
 const PORT = Number(process.env.PORT || 8080)
 
@@ -64,6 +65,14 @@ const CREATOR_TREASURY_KEY = (process.env.CREATOR_TREASURY_KEY || '').trim()
 const CREATOR_LP_MIN_SOL = Number(process.env.CREATOR_LP_MIN_SOL || '0.1')
 const CREATOR_LP_GAS_RESERVE = 0.05
 const CREATOR_LP_BAND = 0.8 // wide range so the treasury LP stays in-range longer
+// Auto-claim: pump.fun creator fees use the fee-SHARING model, so distribution is
+// PERMISSIONLESS — triggered here signed only by a gas wallet (the treasury key),
+// never a fund-controlling key. Distributed fees land with the coin's on-chain
+// fee-sharing recipients. OFF until launch — needs PUDL_MINT + CREATOR_TREASURY_KEY.
+const CREATOR_CLAIM_ENABLED = process.env.CREATOR_CLAIM_ENABLED === '1'
+const CREATOR_CLAIM_MIN_SOL = Number(process.env.CREATOR_CLAIM_MIN_SOL || '0.02')
+const CREATOR_CLAIM_INTERVAL_MIN = Number(process.env.CREATOR_CLAIM_INTERVAL_MIN || '15')
+const creatorClaims: DistributeResult[] = []
 
 // ---------------------------------------------------------------- rivers + meme lens
 
@@ -875,6 +884,25 @@ app.get('/creator-lp', async (_req, res) => {
   res.json({ enabled: CREATOR_LP_ENABLED, mint: FEATURED_MINT || null, treasury, treasurySol, positions: creatorLps.slice(-20).reverse() })
 })
 
+// -------- creator-fee auto-claim --------
+// pump.fun creator fees auto-distributed (permissionless) to the coin's fee-sharing
+// recipients so they never sit unclaimed. Read-only status + recent claim log.
+app.get('/creator-claim', async (_req, res) => {
+  let ready: any = null
+  if (FEATURED_MINT) {
+    try { ready = await distributableFees(FEATURED_MINT) } catch (e: any) { ready = { error: String(e?.message ?? e).slice(0, 100) } }
+  }
+  res.json({
+    enabled: CREATOR_CLAIM_ENABLED,
+    mint: FEATURED_MINT || null,
+    minSol: CREATOR_CLAIM_MIN_SOL,
+    intervalMin: CREATOR_CLAIM_INTERVAL_MIN,
+    payerSet: !!CREATOR_TREASURY_KEY,
+    ready,
+    claims: creatorClaims.slice(-20).reverse(),
+  })
+})
+
 // -------- leaderboard --------
 app.get('/leaderboard', (_req, res) => {
   const rows = leaderboard((sub) => {
@@ -932,6 +960,27 @@ async function runCreatorLp() {
   }
 }
 setInterval(() => { runCreatorLp().catch(() => {}) }, 20 * 60_000).unref?.()
+
+// pump.fun creator-fee auto-claim: distribute accrued fees on a schedule
+// (permissionless — treasury key pays gas only). Gated + skips empty/tiny claims.
+let creatorClaimBusy = false
+async function runCreatorClaim() {
+  if (!CREATOR_CLAIM_ENABLED || !CREATOR_TREASURY_KEY || !FEATURED_MINT || creatorClaimBusy) return
+  creatorClaimBusy = true
+  try {
+    const kp = keypairFromSecret(CREATOR_TREASURY_KEY)
+    const r = await distributeCreatorFees(kp, FEATURED_MINT, CREATOR_CLAIM_MIN_SOL)
+    creatorClaims.push(r)
+    if (creatorClaims.length > 50) creatorClaims.splice(0, creatorClaims.length - 50)
+    if (r.distributed) console.log('[creator-claim]', r.note, r.sig)
+    else if (r.note.startsWith('no fee-sharing')) console.error('[creator-claim]', r.note)
+  } catch (e: any) {
+    console.error('[creator-claim] failed:', String(e?.message ?? e).slice(0, 140))
+  } finally {
+    creatorClaimBusy = false
+  }
+}
+setInterval(() => { runCreatorClaim().catch(() => {}) }, Math.max(1, CREATOR_CLAIM_INTERVAL_MIN) * 60_000).unref?.()
 
 pollRivers()
 setInterval(pollRivers, 30_000)
