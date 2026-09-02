@@ -1,0 +1,38 @@
+<title>PUDL card</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap"><style>
+  html,body{margin:0;padding:0;background:#000}
+  .card{position:relative;width:1600px;height:900px;background:#000;overflow:hidden;
+    font-family:'Inter',system-ui,sans-serif;color:#fff}
+  .frame{position:absolute;inset:34px;border:1px dashed rgba(255,255,255,.13);pointer-events:none}
+  .motif{position:absolute;top:80px;right:70px;width:600px;height:740px;opacity:.92}
+  .top{position:absolute;top:70px;left:78px;right:78px;display:flex;justify-content:space-between;align-items:center}
+  .kicker{font-family:'Space Mono',monospace;text-transform:uppercase;font-size:19px;letter-spacing:.26em;color:rgba(255,255,255,.5)}
+  .mark{display:flex;align-items:center;gap:14px}
+  .mark .wm{font-family:'Archivo Black';font-size:22px;letter-spacing:.02em}
+  .mark .wm b{color:#e8ff1e}
+  .body{position:absolute;left:78px;bottom:150px;max-width:1040px}
+  .headline{font-family:'Archivo Black';text-transform:uppercase;font-size:118px;line-height:.98;
+    letter-spacing:-.01em;margin:0}
+  .headline .a{color:#e8ff1e}
+  .sub{font-family:'Space Mono',monospace;text-transform:uppercase;font-size:22px;letter-spacing:.12em;
+    color:rgba(255,255,255,.62);margin-top:28px}
+  .foot{position:absolute;left:78px;right:78px;bottom:70px;display:flex;justify-content:space-between;
+    align-items:center;font-family:'Space Mono',monospace;font-size:20px;letter-spacing:.16em;
+    text-transform:uppercase;border-top:1px dashed rgba(255,255,255,.13);padding-top:20px}
+  .foot .l{color:rgba(255,255,255,.55)} .foot .r{color:#e8ff1e}
+</style>
+<div class="card">
+  <div class="motif"><svg viewBox="0 0 640 900" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><circle cx="320" cy="450" r="234" fill="none" stroke="#123a4c" stroke-width="44"/><circle cx="320" cy="450" r="150" fill="none" stroke="#e8ff1e" stroke-width="30"/><g stroke="#e8ff1e" stroke-width="20" stroke-linecap="round"><line x1="320" y1="300" x2="320" y2="240"/><line x1="320" y1="600" x2="320" y2="660"/><line x1="170" y1="450" x2="110" y2="450"/><line x1="470" y1="450" x2="530" y2="450"/><line x1="426" y1="344" x2="468" y2="302"/><line x1="214" y1="344" x2="172" y2="302"/><line x1="426" y1="556" x2="468" y2="598"/><line x1="214" y1="556" x2="172" y2="598"/></g><circle cx="320" cy="450" r="34" fill="#e8ff1e"/></svg></div>
+  <div class="frame"></div>
+  <div class="top">
+    <div class="kicker">TRANSPARENT BY DEFAULT</div>
+    <div class="mark">
+      <svg width="34" height="34" viewBox="0 0 100 100"><g fill="none" stroke="#e8ff1e" stroke-linecap="round"><circle cx="50" cy="50" r="33" stroke-width="9"/><circle cx="50" cy="50" r="20" stroke-width="10"/></g><circle cx="50" cy="50" r="7" fill="#e8ff1e"/></svg>
+      <span class="wm">PUDL<b>.</b></span>
+    </div>
+  </div>
+  <div class="body">
+    <h1 class="headline">WATCH THE<br><span class="a">TREASURY.</span></h1>
+    <div class="sub">One public wallet. Every fee lands there, on-chain.</div>
+  </div>
+  <div class="foot"><span class="l">pudl.fun</span><span class="r">$PUDL</span></div>
+</div>
