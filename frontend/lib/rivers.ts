@@ -23,6 +23,7 @@ export interface River {
   flow: 'FLASH FLOOD' | 'SURGE' | 'FLOWING' | 'CALM'
   meme: boolean
   venue?: 'raydium' | 'meteora' | 'pumpswap'
+  hasSol?: boolean // pool has a SOL side → castable
   featured?: boolean // the $PUDL flagship river
 }
 

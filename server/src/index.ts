@@ -67,6 +67,7 @@ const MAJORS = new Set([
   'cbBTC', 'JitoSOL', 'JupSOL', 'mSOL', 'bSOL', 'INF', 'jupSOL',
 ])
 const isMajor = (s: string) => MAJORS.has(s)
+const WSOL_MINT = 'So11111111111111111111111111111111111111112'
 
 type Flow = 'FLASH FLOOD' | 'SURGE' | 'FLOWING' | 'CALM'
 interface River {
@@ -90,6 +91,7 @@ interface River {
   flow: Flow
   meme: boolean
   venue: 'raydium' | 'meteora' | 'pumpswap'
+  hasSol: boolean // pool has a WSOL side → castable with single-sided SOL
   featured?: boolean // the $PUDL flagship river (set once the token launches)
 }
 
@@ -144,6 +146,7 @@ function mapPool(p: any): River {
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'raydium',
+    hasSol: (p.mintA?.address || '') === WSOL_MINT || (p.mintB?.address || '') === WSOL_MINT,
     featured: isFeatured(p.mintA?.address || '', p.mintB?.address || ''),
   }
 }
@@ -178,6 +181,7 @@ function mapMeteora(p: any): River {
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'meteora',
+    hasSol: (p.token_x?.address || '') === WSOL_MINT || (p.token_y?.address || '') === WSOL_MINT,
     featured: isFeatured(p.token_x?.address || '', p.token_y?.address || ''),
   }
 }
@@ -213,6 +217,7 @@ function mapDexPumpswap(p: any): River {
     flow: classifyFlow(vol24h, tvl),
     meme,
     venue: 'pumpswap',
+    hasSol: (p.baseToken?.address || '') === WSOL_MINT || (p.quoteToken?.address || '') === WSOL_MINT,
     featured: isFeatured(p.baseToken?.address || '', p.quoteToken?.address || ''),
   }
 }
@@ -342,7 +347,7 @@ app.get('/rivers', (req, res) => {
   const memeOnly = req.query.all !== '1'
   // the map shows only CASTABLE (Raydium) pools — no dead-end "indexed, not
   // castable" rivers. Meteora / pump.fun pools stay reachable via CA search.
-  let rivers = snapshot.rivers.filter((r) => r.venue === 'raydium')
+  let rivers = snapshot.rivers.filter((r) => r.venue === 'raydium' && r.hasSol)
   if (memeOnly) rivers = rivers.filter((r) => r.meme)
   rivers = rivers.slice(0, 60)
   res.setHeader('Cache-Control', 'public, max-age=15')
