@@ -57,3 +57,6 @@ server/.pudl-test-wallet.json
 .pudl-test-wallet.json
 LAUNCH.md
 TEST-RUNBOOK.md
+
+.env*
+marketing/posts/*.png
