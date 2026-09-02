@@ -48,9 +48,9 @@ This is the engine, and it's worth understanding because it's what makes PUDL co
 
 A token launched through PUDL can pledge its **creator fees** back to the people providing its liquidity — streamed as a boost, instead of pocketed as cash. Why would a creator do that? Because deep liquidity is the only thing that keeps a launch alive. They're buying real, sticky liquidity with fee income that would otherwise just bleed their own chart.
 
-PUDL takes a small cut of everything flowing through, and that cut does two things automatically: it **buys back and burns $PUDL**, and it floods the **flagship $PUDL river** — the one that pays liquidity providers the most.
+And $PUDL's own creator fees go a step further: instead of being pocketed, they're directed to a treasury that provides them as **liquidity in the $PUDL pool itself** — every fee makes the pool deeper and harder to move. No buyback, no burn. Fees become depth.
 
-So the loop tightens on itself: the best real yields pull in more liquidity → deeper liquidity pulls in more volume → more volume means more fees → bigger boosts and a bigger burn → $PUDL becomes more valuable and pays the most → more people want in. Fees flow downhill, and they keep flowing.
+So the loop feeds itself: more trading → more fees → deeper $PUDL liquidity → a healthier pool that pulls in more trading. Fees flow downhill, and they keep flowing.
 
 One thing stays true the whole way down: **you earn by providing liquidity, never by passively holding a token.** That's the honest version, and it's the only one worth building.
 
@@ -71,7 +71,7 @@ Don't take our word for any of it. Check it:
 - **Built on Raydium** (this is where the real fees come from): https://raydium.io
 - **Solscan** (verify your own positions and fees, and every wallet below): https://solscan.io
 - **Boost escrow wallet** — the on-chain address that holds and streams boosts to LPs, transparent from day one: https://solscan.io/account/5yFLvHsnBff9qN7cfvWXSc8Da98HQJgGMmR4gAzkJ6K
-- **$PUDL token contract:** not launched yet. The **official** contract address will be posted here and pinned on our profile the moment it goes live. **Anything claiming to be $PUDL before then is a scam — do not buy it.**
+- **$PUDL token contract:** `7eGWP35VMUqKTHbyTwZhv8aVcCK2iePaz1ju3nZrpump` — the one official contract (verify on Solscan). Anything else claiming to be $PUDL is a scam.
 
 That last point matters. When we launch, the only real CA is the one signed and pinned from our verified account. Screenshot this. Trust nothing else.
 
