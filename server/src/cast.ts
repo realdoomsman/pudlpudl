@@ -243,6 +243,45 @@ export async function closeNet(owner: Keypair, poolId: string, positionMint: str
   return txId
 }
 
+/**
+ * For one wallet, report positionMint -> inRange for the given nets. A CLMM net
+ * only earns while the pool's current tick sits inside the position's [lower,upper).
+ * Once price leaves that band the net silently stops collecting — this lets the UI
+ * flag it. Read-only: one getOwnerPositionInfo call for the wallet + each pool's
+ * live tick. positionMints not found on-chain (closed/burned) are left out.
+ */
+export async function netRangeStatus(
+  owner: Keypair,
+  items: { poolId: string; positionMint: string }[],
+): Promise<Record<string, boolean>> {
+  const out: Record<string, boolean> = {}
+  if (!items.length) return out
+  const raydium = await sdkFor(owner)
+  let positions: any[] = []
+  try {
+    positions = await raydium.clmm.getOwnerPositionInfo({ programId: CLMM_PROGRAM_ID })
+  } catch {
+    return out
+  }
+  const tickByPool = new Map<string, number>()
+  for (const it of items) {
+    const pos = positions.find((p: any) => p.nftMint.toBase58() === it.positionMint)
+    if (!pos) continue // not on-chain anymore — leave unknown
+    let tick = tickByPool.get(it.poolId)
+    if (tick === undefined) {
+      try {
+        const loaded = await loadPool(raydium, it.poolId)
+        tick = loaded.tickCurrent
+        tickByPool.set(it.poolId, tick)
+      } catch {
+        continue
+      }
+    }
+    out[it.positionMint] = pos.tickLower <= tick && tick < pos.tickUpper
+  }
+  return out
+}
+
 export function balanceOf(pubkey: string): Promise<number> {
   return connection.getBalance(new PublicKey(pubkey)).then((l) => l / 1e9)
 }

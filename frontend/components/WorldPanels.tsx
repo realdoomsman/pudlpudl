@@ -200,8 +200,13 @@ function NetRow({ net, onChanged }: { net: MyNet; onChanged: () => void }) {
             {net.bundleId && <span className="text-[7px] font-bold px-1 mono text-acidink shrink-0" style={{ background: '#e8ff1e' }}>MIX</span>}
           </div>
           <div className="text-[10px] text-white/45">
-            {fmtSol(net.amountSol)} · <span style={{ color: net.status === 'live' ? '#e8ff1e' : net.status === 'failed' ? '#ff5a7a' : undefined }}>{label}</span>
+            {fmtSol(net.amountSol)} · <span style={{ color: net.status === 'live' ? (net.inRange === false ? '#ff5a7a' : '#e8ff1e') : net.status === 'failed' ? '#ff5a7a' : undefined }}>{net.status === 'live' && net.inRange === false ? 'out of range' : label}</span>
           </div>
+          {net.status === 'live' && net.inRange === false && (
+            <div className="text-[9px] font-semibold uppercase tracking-wide mt-0.5" style={{ color: '#ff5a7a' }}>
+              ⚠ not earning — pull &amp; re-cast wider
+            </div>
+          )}
         </div>
         {earned > 0 && <div className="mono text-[11px] tnum mr-1" style={{ color: '#e8ff1e' }}>+{fmtSol(earned)}</div>}
         {net.status === 'live' && (

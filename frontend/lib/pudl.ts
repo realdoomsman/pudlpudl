@@ -56,6 +56,7 @@ export interface MyNet {
   feesClaimedSol: number
   boostClaimedSol: number
   boostAccruedSol: number
+  inRange?: boolean // false = position drifted out of range and stopped earning
 }
 
 export interface Home {

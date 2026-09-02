@@ -46,7 +46,7 @@ import {
   type Boost,
   type CreatorLp,
 } from './model'
-import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, transferSolResult, splTokenBalances, createCpmmPool, withAccountLock, keypairFromSecret } from './cast'
+import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, transferSolResult, splTokenBalances, createCpmmPool, withAccountLock, keypairFromSecret, netRangeStatus } from './cast'
 import { distributableFees, distributeCreatorFees, type DistributeResult } from './pumpfees'
 
 const PORT = Number(process.env.PORT || 8080)
@@ -981,6 +981,49 @@ async function runCreatorClaim() {
   }
 }
 setInterval(() => { runCreatorClaim().catch(() => {}) }, Math.max(1, CREATOR_CLAIM_INTERVAL_MIN) * 60_000).unref?.()
+
+// Live nets drift OUT OF RANGE on volatile pools and silently stop earning. Check
+// each live net's position against the pool's live tick periodically so the UI can
+// flag it (and backfill nets cast before this existed). Read-only, no funds move.
+let netRangeBusy = false
+async function refreshNetRanges() {
+  if (netRangeBusy) return
+  const live = nets.filter((n) => n.status === 'live' && n.positionMint)
+  if (!live.length) return
+  netRangeBusy = true
+  try {
+    const bySub = new Map<string, Net[]>()
+    for (const n of live) {
+      const arr = bySub.get(n.sub) || []
+      arr.push(n)
+      bySub.set(n.sub, arr)
+    }
+    for (const [sub, arr] of bySub) {
+      const acc = accountBySub(sub)
+      if (!acc) continue
+      try {
+        const kp = accountKeypair(acc)
+        const status = await withAccountLock(kp.publicKey.toBase58(), () =>
+          netRangeStatus(kp, arr.map((n) => ({ poolId: n.poolId, positionMint: n.positionMint! }))),
+        )
+        let changed = false
+        for (const n of arr) {
+          const ir = status[n.positionMint!]
+          if (ir === undefined) continue
+          if (n.inRange !== ir) { n.inRange = ir; changed = true }
+          n.rangeCheckedAt = Date.now()
+        }
+        if (changed) saveNets()
+      } catch (e: any) {
+        console.error('[net-range]', String(e?.message ?? e).slice(0, 100))
+      }
+    }
+  } finally {
+    netRangeBusy = false
+  }
+}
+setInterval(() => { refreshNetRanges().catch(() => {}) }, 4 * 60_000).unref?.()
+setTimeout(() => { refreshNetRanges().catch(() => {}) }, 15_000).unref?.()
 
 pollRivers()
 setInterval(pollRivers, 30_000)

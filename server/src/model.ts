@@ -107,6 +107,8 @@ export interface Net {
   feesClaimedSol: number // real trading fees harvested, measured in SOL
   boostClaimedSol: number // boost rewards actually paid out to the wallet, in SOL
   boostAccruedSol: number // boost rewards owed but still sitting in escrow, in SOL
+  inRange?: boolean // false once the CLMM position drifts out of range (stops earning); undefined = not yet checked
+  rangeCheckedAt?: number // when inRange was last refreshed on-chain
 }
 
 /** Everything a home has pulled in (across all its members' nets), in SOL. */

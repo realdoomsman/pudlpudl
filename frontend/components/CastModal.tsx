@@ -14,7 +14,10 @@ const BANDS = [
 export function CastModal({ river, onClose }: { river: River; onClose: () => void }) {
   const { me, promptSignIn, refresh } = useAuth()
   const [amount, setAmount] = useState('0.5')
-  const [band, setBand] = useState(1)
+  // hot rivers rip through a tight band in minutes and the net falls out of range
+  // (stops earning). Default the fast ones to the Wide net so casts survive the swings.
+  const hot = river.flow === 'FLASH FLOOD' || river.flow === 'SURGE'
+  const [band, setBand] = useState(hot ? 0 : 1)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [done, setDone] = useState(false)
@@ -118,6 +121,11 @@ export function CastModal({ river, onClose }: { river: River; onClose: () => voi
 
             <div className="mb-5">
               <label className="text-xs text-white/40">How tight?</label>
+              {hot && (
+                <div className="text-[11px] mt-1 mb-0.5" style={{ color: '#e8ff1e' }}>
+                  ⚡ {river.flow} — moves fast. A wider net stays in range and keeps earning.
+                </div>
+              )}
               <div className="mt-1.5 grid grid-cols-3 gap-2">
                 {BANDS.map((b, i) => (
                   <button
