@@ -60,3 +60,9 @@ TEST-RUNBOOK.md
 
 .env*
 marketing/posts/*.png
+
+# creator-fee treasury wallet (NEVER commit)
+server/.pudl-creator-treasury.json
+server/.pudl-creator-treasury.base58.txt
+.pudl-creator-treasury.json
+.pudl-creator-treasury.base58.txt

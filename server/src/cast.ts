@@ -388,3 +388,12 @@ export async function createCpmmPool(
   if (!poolId) throw new Error('pool created but poolId missing from SDK response — verify extInfo shape before enabling POOLS_ENABLED')
   return { txId, poolId }
 }
+
+/** Load a Keypair from a base58 secret string OR a JSON byte-array string. */
+export function keypairFromSecret(secret: string): Keypair {
+  const s = secret.trim()
+  if (s.startsWith('[')) return Keypair.fromSecretKey(Uint8Array.from(JSON.parse(s)))
+  const bs58: any = require('bs58')
+  const decode = (bs58.default || bs58).decode
+  return Keypair.fromSecretKey(new Uint8Array(decode(s)))
+}

@@ -40,10 +40,13 @@ import {
   homeOf,
   ensureHome,
   homeStats,
+  creatorLps,
+  saveCreatorLps,
   type Net,
   type Boost,
+  type CreatorLp,
 } from './model'
-import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, transferSolResult, splTokenBalances, createCpmmPool, withAccountLock } from './cast'
+import { openNet, harvestNet, closeNet, balanceOf, withdrawSol, transferSol, transferSolResult, splTokenBalances, createCpmmPool, withAccountLock, keypairFromSecret } from './cast'
 
 const PORT = Number(process.env.PORT || 8080)
 
@@ -53,6 +56,14 @@ const PORT = Number(process.env.PORT || 8080)
 const BOOSTS_ENABLED = process.env.BOOSTS_ENABLED === '1'
 const POOLS_ENABLED = process.env.POOLS_ENABLED === '1'
 const MIN_BOOST_SOL = 0.05
+// Auto-LP: route the creator-fee treasury's SOL into the $PUDL pool as liquidity
+// (deepening $PUDL's own liquidity; no buyback/burn). OFF until launch — needs
+// PUDL_MINT + CREATOR_TREASURY_KEY set, and a funded verification once the pool exists.
+const CREATOR_LP_ENABLED = process.env.CREATOR_LP_ENABLED === '1'
+const CREATOR_TREASURY_KEY = (process.env.CREATOR_TREASURY_KEY || '').trim()
+const CREATOR_LP_MIN_SOL = Number(process.env.CREATOR_LP_MIN_SOL || '0.1')
+const CREATOR_LP_GAS_RESERVE = 0.05
+const CREATOR_LP_BAND = 0.8 // wide range so the treasury LP stays in-range longer
 
 // ---------------------------------------------------------------- rivers + meme lens
 
@@ -853,6 +864,17 @@ app.post('/rivers/create', async (req, res) => {
   }
 })
 
+// -------- creator-fee auto-LP --------
+// status of the creator-fee treasury + the LP it has provided into the $PUDL pool
+app.get('/creator-lp', async (_req, res) => {
+  let treasury: string | null = null
+  let treasurySol = 0
+  if (CREATOR_TREASURY_KEY) {
+    try { const kp = keypairFromSecret(CREATOR_TREASURY_KEY); treasury = kp.publicKey.toBase58(); treasurySol = await balanceOf(treasury) } catch {}
+  }
+  res.json({ enabled: CREATOR_LP_ENABLED, mint: FEATURED_MINT || null, treasury, treasurySol, positions: creatorLps.slice(-20).reverse() })
+})
+
 // -------- leaderboard --------
 app.get('/leaderboard', (_req, res) => {
   const rows = leaderboard((sub) => {
@@ -874,6 +896,42 @@ app.get('/stats', (_req, res) => {
     netsLive: nets.filter((n) => n.status === 'live').length,
   })
 })
+
+// creator-fee treasury -> liquidity in the $PUDL pool, on a schedule
+let creatorLpBusy = false
+async function runCreatorLp() {
+  if (!CREATOR_LP_ENABLED || !CREATOR_TREASURY_KEY || !FEATURED_MINT || !snapshot || creatorLpBusy) return
+  // the $PUDL/SOL Raydium pool (single-sided SOL LP goes here)
+  const pool = snapshot.rivers.find((r) => r.venue === 'raydium' && r.hasSol && (r.mintA === FEATURED_MINT || r.mintB === FEATURED_MINT))
+  if (!pool) return // pool not indexed yet (token not launched, or not on Raydium yet)
+  creatorLpBusy = true
+  try {
+    const kp = keypairFromSecret(CREATOR_TREASURY_KEY)
+    let bal = 0
+    try { bal = await balanceOf(kp.publicKey.toBase58()) } catch {}
+    const amt = Math.floor((bal - CREATOR_LP_GAS_RESERVE) * 1e6) / 1e6
+    if (amt < CREATOR_LP_MIN_SOL) return // not enough fees accrued yet
+    const rec: CreatorLp = { id: newId('clp'), poolId: pool.id, poolName: pool.name, amountSol: amt, positionMint: null, status: 'opening', sig: null, at: Date.now() }
+    creatorLps.push(rec)
+    saveCreatorLps()
+    try {
+      const { positionMint, txId } = await withAccountLock(kp.publicKey.toBase58(), () => openNet(kp, pool.id, amt, CREATOR_LP_BAND))
+      rec.positionMint = positionMint
+      rec.sig = txId
+      rec.status = 'live'
+    } catch (e: any) {
+      rec.status = 'failed'
+      rec.sig = String(e?.message ?? e).slice(0, 140)
+      console.error('[creator-lp] open failed:', rec.sig)
+    }
+    saveCreatorLps()
+  } catch (e: any) {
+    console.error('[creator-lp] failed:', String(e?.message ?? e).slice(0, 120))
+  } finally {
+    creatorLpBusy = false
+  }
+}
+setInterval(() => { runCreatorLp().catch(() => {}) }, 20 * 60_000).unref?.()
 
 pollRivers()
 setInterval(pollRivers, 30_000)

@@ -266,6 +266,23 @@ export function recreditBoostSol(sub: string, amount: number): void {
   n.boostAccruedSol = (n.boostAccruedSol || 0) + amount
 }
 
+// ------------------------------------------------------- creator LP
+
+// Positions the auto-LP job opens: creator-fee treasury SOL -> liquidity in the
+// $PUDL pool (deepening $PUDL's own liquidity). No buyback/burn.
+export interface CreatorLp {
+  id: string
+  poolId: string
+  poolName: string
+  amountSol: number
+  positionMint: string | null
+  status: 'opening' | 'live' | 'failed'
+  sig: string | null
+  at: number
+}
+export const creatorLps: CreatorLp[] = loadJson<CreatorLp[]>('creator-lps.json', [])
+export const saveCreatorLps = () => saveJson('creator-lps.json', creatorLps)
+
 // ------------------------------------------------------------- leaderboard
 
 export interface LeaderRow {
